@@ -1,0 +1,91 @@
+"""Per-panel calibration + stacking ensemble.
+
+Pipeline (leak-free):
+  1. Base OOF: each tuned base model produces 5-fold out-of-fold probabilities
+     (every row predicted by a model that did not train on it).
+  2. Calibration + meta: isotonic calibration of each base column is fit INSIDE
+     a meta cross-validation fold, then a logistic-regression meta-learner is
+     trained on the calibrated columns. The resulting meta OOF is fully honest.
+  3. A single threshold is tuned on the meta OOF (one scalar — negligible
+     optimism) to report binary F1 on the Pathogenic class.
+
+`fit_final_stack` refits calibrators + meta on the full OOF so the bundle can be
+persisted for test-time prediction.
+"""
+from __future__ import annotations
+
+import json
+
+import numpy as np
+import pandas as pd
+from sklearn.isotonic import IsotonicRegression
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import StratifiedKFold
+
+from src import config, cv, tuning
+
+KINDS = ("xgboost", "lightgbm", "catboost")
+
+
+def _tuned_params(panel: str, kind: str) -> dict:
+    path = config.OUTPUT_DIR / "optuna" / f"{panel}_{kind}_best.json"
+    return json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+
+
+def generate_base_oof(panel, X, y, cat_cols, seed=config.SEED):
+    """Return (base_oof DataFrame, per-model single results, full-data models)."""
+    base_oof = {}
+    singles = {}
+    full_models = {}
+    for kind in KINDS:
+        params = _tuned_params(panel, kind)
+        factory = (lambda y_tr, k=kind, p=params: tuning.build_estimator(k, p, y_tr))
+        cat_kw = tuning.cat_kwarg(kind)
+        use_cat = bool(cat_kw and cat_cols)
+        fit_fn = (lambda X_tr, y_tr, ck=cat_kw: {ck: list(cat_cols)}) if use_cat else None
+
+        res = cv.run_cv(factory, X, y, cat_cols=cat_cols, fit_kwargs_fn=fit_fn, seed=seed)
+        base_oof[kind] = res["oof"]
+        singles[kind] = {"f1": res["f1"], "threshold": res["threshold"], "auc": res["auc"]}
+
+        model = factory(pd.Series(np.asarray(y)))
+        model.fit(X, np.asarray(y), **(fit_fn(X, y) if fit_fn else {}))
+        full_models[kind] = model
+
+    return pd.DataFrame(base_oof, index=X.index), singles, full_models
+
+
+def evaluate_stack(base_oof, y, n_splits=5, seed=config.SEED):
+    """Honest meta OOF via per-fold isotonic calibration + logistic meta-learner."""
+    y = pd.Series(np.asarray(y)).reset_index(drop=True)
+    bo = base_oof.reset_index(drop=True)
+    skf = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=seed)
+    meta_oof = np.zeros(len(y))
+
+    for tr, va in skf.split(bo, y):
+        z_tr = np.zeros((len(tr), bo.shape[1]))
+        z_va = np.zeros((len(va), bo.shape[1]))
+        for j, col in enumerate(bo.columns):
+            iso = IsotonicRegression(out_of_bounds="clip").fit(
+                bo[col].iloc[tr].to_numpy(), y.iloc[tr].to_numpy()
+            )
+            z_tr[:, j] = iso.predict(bo[col].iloc[tr].to_numpy())
+            z_va[:, j] = iso.predict(bo[col].iloc[va].to_numpy())
+        lr = LogisticRegression(max_iter=1000).fit(z_tr, y.iloc[tr].to_numpy())
+        meta_oof[va] = lr.predict_proba(z_va)[:, 1]
+
+    threshold, f1 = cv.tune_threshold(y.to_numpy(), meta_oof)
+    return meta_oof, threshold, f1
+
+
+def fit_final_stack(base_oof, y):
+    """Refit calibrators + meta-learner on the full OOF (for prediction)."""
+    y = np.asarray(y)
+    calibrators = {}
+    z = np.zeros((len(y), base_oof.shape[1]))
+    for j, col in enumerate(base_oof.columns):
+        iso = IsotonicRegression(out_of_bounds="clip").fit(base_oof[col].to_numpy(), y)
+        calibrators[col] = iso
+        z[:, j] = iso.predict(base_oof[col].to_numpy())
+    meta = LogisticRegression(max_iter=1000).fit(z, y)
+    return calibrators, meta
