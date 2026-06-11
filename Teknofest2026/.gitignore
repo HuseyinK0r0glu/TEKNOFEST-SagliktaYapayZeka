@@ -1,0 +1,13 @@
+# Veri Setleri
+data/raw/
+data/processed/
+
+# Modeller ve Çıktılar
+outputs/models/*.joblib
+outputs/models/*.pkl
+outputs/models/calibrators/
+
+# Python Önbellekleri
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
