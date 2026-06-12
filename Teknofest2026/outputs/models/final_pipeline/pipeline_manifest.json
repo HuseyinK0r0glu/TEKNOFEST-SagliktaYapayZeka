@@ -1,0 +1,138 @@
+{
+  "created": "2026-06-12 10:57:21",
+  "git_commit": "",
+  "seed": 42,
+  "library_versions": {
+    "numpy": "2.3.3",
+    "pandas": "2.3.3",
+    "scipy": "1.16.3",
+    "sklearn": "1.7.2",
+    "xgboost": "3.2.0",
+    "lightgbm": "4.6.0",
+    "catboost": "1.2.10",
+    "shap": "0.52.0"
+  },
+  "n_selected_features": 32,
+  "selected_features": [
+    "misspat_sim_diff",
+    "EK_7",
+    "AL_16",
+    "AL_215",
+    "n_missing_total",
+    "int_ekmax_over_af",
+    "abs_delta_hydrophobicity_eis",
+    "blosum62_score",
+    "AL_287",
+    "AL_327",
+    "aa1_mw",
+    "af_log_mean",
+    "aa2_is_tiny",
+    "AL_22",
+    "int_tier_x_ekmean",
+    "AL_50",
+    "AL_59",
+    "ek_count",
+    "AL_224",
+    "aa_pair_te",
+    "AL_17",
+    "AL_251",
+    "delta_hydrophobicity_eis",
+    "AL_319",
+    "AL_19",
+    "AL_11",
+    "source_te",
+    "AL_184",
+    "af_population_spread",
+    "AL_26",
+    "AL_54",
+    "aa2_sasa"
+  ],
+  "base_models": [
+    "XGB_tuned",
+    "LGBM_tuned",
+    "CatBoost_tuned",
+    "Skeleton_head",
+    "Dense_head"
+  ],
+  "meta_cols": [
+    "XGB_tuned",
+    "LGBM_tuned",
+    "CatBoost_tuned",
+    "Skeleton_head",
+    "Dense_head",
+    "is_master",
+    "is_kanser",
+    "is_pah",
+    "is_cftr",
+    "missingness_tier_encoded"
+  ],
+  "apply_thresholds": {
+    "global": 0.22,
+    "master": 0.22,
+    "kanser": 0.265,
+    "pah": 0.205,
+    "cftr": 0.27
+  },
+  "metrics": {
+    "stacked_oof_auc": 0.8799533938814531,
+    "stacked_oof_auc_per_source": {
+      "master": 0.8703037103391105,
+      "kanser": 0.9357553366174056,
+      "pah": 0.8338354303266584,
+      "cftr": 0.9539772727272728
+    },
+    "canary_auc": 0.8506507954166203
+  },
+  "artifacts": {
+    "feature_schema": {
+      "path": "./outputs/encoders\\feature_schema.json",
+      "exists": true
+    },
+    "ek_direction_map": {
+      "path": "./outputs/encoders\\ek_direction_map.json",
+      "exists": true
+    },
+    "ek_rank_thresholds": {
+      "path": "./outputs/encoders\\ek_rank_thresholds.json",
+      "exists": true
+    },
+    "target_encoding_mappings": {
+      "path": "./outputs/encoders/target_encoding_mappings",
+      "exists": true
+    },
+    "selected_features": {
+      "path": "./outputs/feature_selection\\selected_features.json",
+      "exists": true
+    },
+    "calibrators": {
+      "path": "./outputs/models/calibrators",
+      "exists": true
+    },
+    "meta_learner": {
+      "path": "./outputs/models/stacking\\meta_learner.pkl",
+      "exists": true
+    },
+    "stacking_config": {
+      "path": "./outputs/models/stacking\\stacking_config.json",
+      "exists": true
+    },
+    "thresholds": {
+      "path": "./outputs/models\\thresholds.json",
+      "exists": true
+    }
+  },
+  "missing_artifacts": [],
+  "inference_ready": true,
+  "inference_recipe": [
+    "Load raw test CSV(s); tag `source`; build FeatureSchema (or load feature_schema.json).",
+    "engineer_features_stateless(test_df, schema)  # row-level Phase-2 features.",
+    "Load EKRankNormalizer (ek_rank_thresholds.json) + per-fold target-encoding maps.",
+    "transform_split(test_stateless, fitted_state)  # EK ranks + aggregates + interactions.",
+    "encoders.assemble_tree_matrix(...) restricted to selected_features (NaN preserved).",
+    "For each base model: average the per-fold predict_proba over the 5 saved folds.",
+    "Apply each base model's Isotonic calibrator (calibrators/<model>_isotonic.pkl).",
+    "Rank-normalise calibrated columns; build the meta-matrix (+ source flags + tier).",
+    "meta_learner.predict_proba -> stacked P(pathogenic).",
+    "threshold_optimizer.apply_per_source_thresholds(proba, source, thresholds.json)."
+  ]
+}

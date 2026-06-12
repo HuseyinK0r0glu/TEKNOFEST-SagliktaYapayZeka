@@ -1,13 +1,9 @@
-# Veri Setleri
+# Sadece devasa veri setlerini engelliyoruz (Bunlar hala gitmeyecek)
 data/raw/
 data/processed/
 
-# Modeller ve Çıktılar
-outputs/models/*.joblib
-outputs/models/*.pkl
-outputs/models/calibrators/
-
-# Python Önbellekleri
+# Gereksiz Python önbellekleri ve sistem dosyaları
 __pycache__/
 *.pyc
 .ipynb_checkpoints/
+.DS_Store
