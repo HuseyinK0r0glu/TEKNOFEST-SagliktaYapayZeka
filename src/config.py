@@ -8,12 +8,18 @@ Architecture directive (governs the whole project):
 """
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 SEED = 42
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-DATA_DIR = PROJECT_ROOT / "universite-veri-seti" / "EĞİTİM (TRAIN) SETLERİ"
+# Dataset location is overridable via TEKNOFEST_DATA_DIR so the four panel CSVs
+# can live outside the repo (e.g. on Google Drive when running in Colab).
+DATA_DIR = Path(os.environ.get(
+    "TEKNOFEST_DATA_DIR",
+    PROJECT_ROOT / "universite-veri-seti" / "EĞİTİM (TRAIN) SETLERİ",
+))
 OUTPUT_DIR = PROJECT_ROOT / "outputs"
 EDA_DIR = OUTPUT_DIR / "eda"
 
