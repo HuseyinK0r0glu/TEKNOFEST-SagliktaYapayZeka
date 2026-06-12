@@ -43,42 +43,56 @@ def run_panel(panel: str) -> dict:
     best_kind = max(singles, key=lambda k: singles[k]["f1"])
     best_single_f1 = singles[best_kind]["f1"]
     mean_t, mean_f1 = cv.tune_threshold(y_arr, base_oof.mean(axis=1).to_numpy())
-    meta_oof, meta_t, meta_f1 = stacking.evaluate_stack(base_oof, y)
-    brier = float(brier_score_loss(y_arr, meta_oof))
+
+    # Two stack variants: trees-only (validated core) and all bases (with the
+    # diverse models). Champion selection keeps whichever wins on honest OOF.
+    variants = {}
+    for vname, vkinds in stacking.STACK_VARIANTS.items():
+        vcols = [c for c in vkinds if c in base_oof.columns]
+        m_oof, m_t, m_f1 = stacking.evaluate_stack(base_oof, y, cols=vcols)
+        variants[vname] = {"oof": m_oof, "threshold": m_t, "f1": m_f1, "cols": vcols}
 
     print(f"\n=== Panel {panel} (n={len(y)}, features={X.shape[1]}) ===")
     for kind in stacking.KINDS:
-        print(f"  base {kind:9s} F1={singles[kind]['f1']:.4f} (AUC {singles[kind]['auc']:.4f})")
-    print(f"  best single   : {best_kind} F1={best_single_f1:.4f}")
-    print(f"  mean ensemble : F1={mean_f1:.4f} @ t={mean_t:.3f}")
-    print(f"  STACKED       : F1={meta_f1:.4f} @ t={meta_t:.3f} "
-          f"(Δ vs best single {meta_f1 - best_single_f1:+.4f}) | Brier={brier:.4f}")
+        print(f"  base {kind:10s} F1={singles[kind]['f1']:.4f} (AUC {singles[kind]['auc']:.4f})")
+    print(f"  best single    : {best_kind} F1={best_single_f1:.4f}")
+    print(f"  mean ensemble  : F1={mean_f1:.4f} @ t={mean_t:.3f}")
+    for vname, v in variants.items():
+        print(f"  {vname:14s}: F1={v['f1']:.4f} @ t={v['threshold']:.3f} "
+              f"(Δ vs best single {v['f1'] - best_single_f1:+.4f})")
 
     # --- persist prediction bundle ---
-    calibrators, meta = stacking.fit_final_stack(base_oof, y)
     model_dir = config.OUTPUT_DIR / "models" / panel
     model_dir.mkdir(parents=True, exist_ok=True)
     for kind, model in full_models.items():
         joblib.dump(model, model_dir / f"base_{kind}.joblib")
-    joblib.dump(calibrators, model_dir / "calibrators.joblib")
-    joblib.dump(meta, model_dir / "meta_logreg.joblib")
-    (model_dir / "selected_features.json").write_text(
-        json.dumps(list(X.columns), indent=2), encoding="utf-8")
-    (model_dir / "threshold.json").write_text(
-        json.dumps({"threshold": meta_t, "base_order": list(base_oof.columns)}, indent=2),
-        encoding="utf-8")
 
     stack_dir = config.OUTPUT_DIR / "stacking"
     stack_dir.mkdir(parents=True, exist_ok=True)
     oof_df = base_oof.copy()
-    oof_df["meta"] = meta_oof
+    best_variant = max(variants, key=lambda v: variants[v]["f1"])
+    for vname, v in variants.items():
+        calibrators, meta, order = stacking.fit_final_stack(base_oof, y, cols=v["cols"])
+        joblib.dump(calibrators, model_dir / f"calibrators_{vname}.joblib")
+        joblib.dump(meta, model_dir / f"meta_{vname}.joblib")
+        (model_dir / f"{vname}_order.json").write_text(
+            json.dumps(order, indent=2), encoding="utf-8")
+        oof_df[f"meta_{vname}"] = v["oof"]
+    (model_dir / "selected_features.json").write_text(
+        json.dumps(list(X.columns), indent=2), encoding="utf-8")
+
     oof_df["y"] = y_arr
     oof_df.to_csv(stack_dir / f"{panel}_oof.csv", index=False)
 
+    best_v = variants[best_variant]
+    brier = float(brier_score_loss(y_arr, best_v["oof"]))
     return {
         "panel": panel, "best_single_model": best_kind, "f1_best_single": best_single_f1,
-        "f1_mean_ensemble": mean_f1, "f1_stacked": meta_f1, "stacked_threshold": meta_t,
-        "brier": brier,
+        "f1_mean_ensemble": mean_f1,
+        "f1_stacked_all": variants["stacked_all"]["f1"],
+        "f1_stacked_trees": variants["stacked_trees"]["f1"],
+        "best_stack_variant": best_variant, "f1_stacked": best_v["f1"],
+        "stacked_threshold": best_v["threshold"], "brier": brier,
     }
 
 
@@ -90,9 +104,9 @@ def main(panels):
     out_path = stack_dir / "stacking_summary.csv"
     summary.to_csv(out_path, index=False)
 
-    print("\n=== Final per-panel F1 (stacked) ===")
+    print("\n=== Final per-panel F1 (best stack variant) ===")
     for _, r in summary.iterrows():
-        print(f"  {r['panel']:7s} stacked F1={r['f1_stacked']:.4f} "
+        print(f"  {r['panel']:7s} {r['best_stack_variant']:13s} F1={r['f1_stacked']:.4f} "
               f"@ t={r['stacked_threshold']:.3f}  (best single {r['f1_best_single']:.4f})")
     print(f"\n[written] {out_path}")
 

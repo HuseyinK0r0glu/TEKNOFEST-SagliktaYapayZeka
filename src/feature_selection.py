@@ -39,10 +39,18 @@ def _fit_gain(X, y_values, cat_cols, seed) -> np.ndarray:
 
 
 def null_importance_selection(X, y, cat_cols, n_actual=5, n_null=50,
-                              seed=config.SEED, percentile=95):
+                              seed=config.SEED, percentile=95,
+                              k_div=12, k_cap=50, k_min=10):
     """Return a per-feature DataFrame with a `keep` flag.
 
-    keep = real importance > `percentile` of the null distribution.
+    keep = (real importance > `percentile` of the null distribution) OR
+           (feature is among the top-K by gain_score).
+
+    The top-K floor makes selection strictly more inclusive than the bare
+    null-importance gate and panel-size bounded (K = clip(n_rows/k_div, k_min,
+    k_cap)). It guards against the gate's instability: when the candidate pool
+    grows, the gate can otherwise drop a feature that a smaller pool had kept,
+    silently regressing a panel. The floor never removes a gate-passer.
     """
     y = pd.Series(np.asarray(y)).reset_index(drop=True)
     rng = np.random.default_rng(seed)
@@ -63,13 +71,19 @@ def null_importance_selection(X, y, cat_cols, n_actual=5, n_null=50,
     null_pct = np.percentile(nulls, percentile, axis=0)
     null_p75 = np.percentile(nulls, 75, axis=0)
     gain_score = np.log((1.0 + actual) / (1.0 + null_p75))
-    keep = actual > null_pct
+    gate = actual > null_pct
+
+    k = int(min(k_cap, max(k_min, len(X) // k_div)))
+    topk = np.zeros(len(gain_score), dtype=bool)
+    topk[np.argsort(gain_score)[::-1][:k]] = True
+    keep = gate | topk
 
     table = pd.DataFrame({
         "feature": list(X.columns),
         "actual_gain": actual,
         f"null_p{percentile}": null_pct,
         "gain_score": gain_score,
+        "gate": gate,
         "keep": keep,
     })
     return table.sort_values("gain_score", ascending=False).reset_index(drop=True)

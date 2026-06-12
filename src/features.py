@@ -79,8 +79,21 @@ def build_features(df: pd.DataFrame, cat_maps=None):
         n_missing_total, bins=[-1, 20, 100, 200, 300, 351], labels=[0, 1, 2, 3, 4]
     ).astype(int)
 
+    # Missingness-block features: which annotation groups are absent together.
+    # CAT_1/2 = population labels, CAT_3/4/5 = genotypes (per data profile). A
+    # whole block being absent is an annotation-source signature, not random NA.
+    feats["all_ek_missing"] = df[config.EK_COLS].isnull().all(axis=1).astype(int)
+    feats["population_block_missing"] = df[["CAT_1", "CAT_2"]].isnull().all(axis=1).astype(int)
+    feats["genotype_block_missing"] = df[["CAT_3", "CAT_4", "CAT_5"]].isnull().all(axis=1).astype(int)
+    feats["n_missing_blocks"] = (
+        feats["all_ek_missing"] + feats["population_block_missing"]
+        + feats["genotype_block_missing"]
+    )
+
     # --- Amino-acid substitution features ---
     feats["blosum62"] = np.array([aac.blosum62(x, z) for x, z in zip(a1, a2)], dtype=float)
+    feats["blosum45"] = np.array([aac.blosum45(x, z) for x, z in zip(a1, a2)], dtype=float)
+    feats["blosum80"] = np.array([aac.blosum80(x, z) for x, z in zip(a1, a2)], dtype=float)
     feats["grantham"] = np.array([aac.grantham(x, z) for x, z in zip(a1, a2)], dtype=float)
     for name, table in aac.PHYS.items():
         v1 = a1.map(lambda x: table.get(x, np.nan)).astype(float)
@@ -119,6 +132,18 @@ def build_features(df: pd.DataFrame, cat_maps=None):
     feats["al_cont_min"] = cdf.min(axis=1)
     feats["al_cont_std"] = cdf.std(axis=1)
     feats["al_n_rare"] = ((cdf > 0) & (cdf < 1e-3)).sum(axis=1)  # allele-freq-like rarity
+
+    # log1p-scaled aggregations: continuous AL values span allele-frequency-like
+    # magnitudes (<1e-3) up to ~2.6e5, so the raw mean/max/std above are dominated
+    # by the large-magnitude columns. log1p compresses each value before pooling.
+    log_cdf = np.log1p(cdf.clip(lower=0))
+    feats["al_log_mean"] = log_cdf.mean(axis=1)
+    feats["al_log_max"] = log_cdf.max(axis=1)
+    feats["al_log_std"] = log_cdf.std(axis=1)
+    # rare-allele rarity: -log10 of the smallest positive value (larger = rarer).
+    min_pos = cdf.where(cdf > 0).min(axis=1)
+    feats["al_neglog10_min_pos"] = -np.log10(min_pos.clip(lower=1e-12))
+    feats["al_n_ultrarare"] = ((cdf > 0) & (cdf < 1e-4)).sum(axis=1)
 
     # --- EK aggregations (all EK_* correlate positively with pathogenicity) ---
     edf = df[config.EK_COLS]

@@ -6,6 +6,7 @@ return NaN from the matrix lookups; callers flag those rows separately.
 from __future__ import annotations
 
 import numpy as np
+from Bio.Align import substitution_matrices
 
 # Canonical BLOSUM62 ordering.
 _B62_ORDER = list("ARNDCQEGHILKMFPSTWYV")
@@ -35,6 +36,20 @@ BLOSUM62 = {
     a: {b: _B62_ROWS[i][j] for j, b in enumerate(_B62_ORDER)}
     for i, a in enumerate(_B62_ORDER)
 }
+
+
+def _load_blosum(name: str) -> dict:
+    """Load an NCBI BLOSUM matrix from biopython, restricted to the 20 standard
+    AAs (so `*`/non-standard codes still return NaN, matching blosum62)."""
+    m = substitution_matrices.load(name)
+    return {a: {b: float(m[a, b]) for b in _B62_ORDER} for a in _B62_ORDER}
+
+
+# BLOSUM45 (more permissive — distant homologs) and BLOSUM80 (stricter — close
+# homologs) bracket BLOSUM62's substitution stringency. Sourced from biopython
+# to avoid hand-transcribing two 20x20 matrices.
+BLOSUM45 = _load_blosum("BLOSUM45")
+BLOSUM80 = _load_blosum("BLOSUM80")
 
 # Grantham (1974) properties: composition (c), polarity (p), volume (v).
 # Distance is computed from these so we avoid embedding the 190-pair table.
@@ -86,6 +101,28 @@ PHYS = {
         "L": 0.0, "M": 0.0, "F": 0.0, "P": 0.0, "S": 0.0, "T": 0.0,
         "W": 0.0, "Y": 0.0, "V": 0.0,
     },
+    # Chou-Fasman (1978) conformational propensities. Orthogonal to the
+    # physicochemical scales above: they capture how a residue affects local
+    # secondary structure, so a substitution that flips helix<->sheet propensity
+    # signals structural disruption even when size/polarity barely change.
+    "helix_prop": {  # P(alpha) — alpha-helix former
+        "A": 1.42, "R": 0.98, "N": 0.67, "D": 1.01, "C": 0.70, "Q": 1.11,
+        "E": 1.51, "G": 0.57, "H": 1.00, "I": 1.08, "L": 1.21, "K": 1.16,
+        "M": 1.45, "F": 1.13, "P": 0.57, "S": 0.77, "T": 0.83, "W": 1.08,
+        "Y": 0.69, "V": 1.06,
+    },
+    "sheet_prop": {  # P(beta) — beta-sheet former
+        "A": 0.83, "R": 0.93, "N": 0.89, "D": 0.54, "C": 1.19, "Q": 1.10,
+        "E": 0.37, "G": 0.75, "H": 0.87, "I": 1.60, "L": 1.30, "K": 0.74,
+        "M": 1.05, "F": 1.38, "P": 0.55, "S": 0.75, "T": 1.19, "W": 1.37,
+        "Y": 1.47, "V": 1.70,
+    },
+    "turn_prop": {  # P(turn) — reverse-turn former
+        "A": 0.66, "R": 0.95, "N": 1.56, "D": 1.46, "C": 1.19, "Q": 0.98,
+        "E": 0.74, "G": 1.56, "H": 0.95, "I": 0.47, "L": 0.59, "K": 1.01,
+        "M": 0.60, "F": 0.60, "P": 1.52, "S": 1.43, "T": 0.96, "W": 0.96,
+        "Y": 1.14, "V": 0.50,
+    },
 }
 
 # Chemical group membership (for group_change feature).
@@ -103,10 +140,22 @@ def _valid(aa) -> bool:
     return isinstance(aa, str) and aa in _GRANTHAM_PROPS
 
 
-def blosum62(a, b) -> float:
-    if isinstance(a, str) and isinstance(b, str) and a in BLOSUM62 and b in BLOSUM62[a]:
-        return float(BLOSUM62[a][b])
+def _blosum_lookup(matrix, a, b) -> float:
+    if isinstance(a, str) and isinstance(b, str) and a in matrix and b in matrix[a]:
+        return float(matrix[a][b])
     return np.nan
+
+
+def blosum62(a, b) -> float:
+    return _blosum_lookup(BLOSUM62, a, b)
+
+
+def blosum45(a, b) -> float:
+    return _blosum_lookup(BLOSUM45, a, b)
+
+
+def blosum80(a, b) -> float:
+    return _blosum_lookup(BLOSUM80, a, b)
 
 
 def grantham(a, b) -> float:

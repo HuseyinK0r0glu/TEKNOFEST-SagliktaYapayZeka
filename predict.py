@@ -50,9 +50,9 @@ def predict_panel(panel: str, df: pd.DataFrame) -> pd.DataFrame:
         proba = _base_proba(bundle_dir, champion["model"], X)
     elif strategy == "mean":
         proba = np.mean([_base_proba(bundle_dir, k, X) for k in order], axis=0)
-    else:  # stacked: calibrate each base, then logistic meta-learner
-        calibrators = joblib.load(bundle_dir / "calibrators.joblib")
-        meta = joblib.load(bundle_dir / "meta_logreg.joblib")
+    else:  # stacked_all / stacked_trees: calibrate each base, then logistic meta
+        calibrators = joblib.load(bundle_dir / f"calibrators_{strategy}.joblib")
+        meta = joblib.load(bundle_dir / f"meta_{strategy}.joblib")
         z = np.column_stack([
             calibrators[k].predict(_base_proba(bundle_dir, k, X)) for k in order
         ])

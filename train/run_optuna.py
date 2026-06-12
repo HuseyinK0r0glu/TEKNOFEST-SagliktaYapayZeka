@@ -21,6 +21,12 @@ from src import config, data_io, features, tuning
 
 N_TRIALS = int(os.environ.get("OPTUNA_TRIALS", "40"))
 TIMEOUT = int(os.environ.get("OPTUNA_TIMEOUT", "150"))
+# Restrict which model kinds to tune (default: all). Lets the diverse base models
+# be tuned without re-running the already-saved boosted-tree studies.
+KINDS = [
+    k.strip() for k in os.environ.get("OPTUNA_KINDS", ",".join(tuning.MODEL_KINDS)).split(",")
+    if k.strip()
+]
 
 
 def _load_selected(panel: str):
@@ -49,9 +55,9 @@ def run_panel(panel: str, out_dir) -> list[dict]:
     prev = _selected_f1(panel)
 
     print(f"\n=== Panel {panel} (n={len(y)}, features={X.shape[1]}, "
-          f"trials<={N_TRIALS}, timeout={TIMEOUT}s) ===", flush=True)
+          f"trials<={N_TRIALS}, timeout={TIMEOUT}s, kinds={KINDS}) ===", flush=True)
     rows = []
-    for kind in ("xgboost", "lightgbm", "catboost"):
+    for kind in KINDS:
         best_params, best_f1, n_done = tuning.tune_model(
             kind, X, y, cat_cols, n_trials=N_TRIALS, timeout=TIMEOUT
         )

@@ -24,7 +24,15 @@ from sklearn.model_selection import StratifiedKFold
 
 from src import config, cv, tuning
 
-KINDS = ("xgboost", "lightgbm", "catboost")
+KINDS = tuning.MODEL_KINDS
+
+# The boosted-tree bases are the validated core; the two diverse bases
+# (extratrees, logreg_l1) are optional. A diverse base helps the stack on some
+# panels (CFTR) but hurts it on others (PAH), so we evaluate two stack variants
+# and let champion selection keep whichever wins on honest OOF — guaranteeing we
+# never regress below the trees-only stack.
+TREE_KINDS = ("xgboost", "lightgbm", "catboost")
+STACK_VARIANTS = {"stacked_all": tuple(KINDS), "stacked_trees": TREE_KINDS}
 
 
 def _tuned_params(panel: str, kind: str) -> dict:
@@ -37,9 +45,11 @@ def generate_base_oof(panel, X, y, cat_cols, seed=config.SEED):
     base_oof = {}
     singles = {}
     full_models = {}
+    feature_cols = list(X.columns)
     for kind in KINDS:
         params = _tuned_params(panel, kind)
-        factory = (lambda y_tr, k=kind, p=params: tuning.build_estimator(k, p, y_tr))
+        factory = (lambda y_tr, k=kind, p=params: tuning.build_estimator(
+            k, p, y_tr, feature_cols, cat_cols))
         cat_kw = tuning.cat_kwarg(kind)
         use_cat = bool(cat_kw and cat_cols)
         fit_fn = (lambda X_tr, y_tr, ck=cat_kw: {ck: list(cat_cols)}) if use_cat else None
@@ -55,10 +65,15 @@ def generate_base_oof(panel, X, y, cat_cols, seed=config.SEED):
     return pd.DataFrame(base_oof, index=X.index), singles, full_models
 
 
-def evaluate_stack(base_oof, y, n_splits=5, seed=config.SEED):
-    """Honest meta OOF via per-fold isotonic calibration + logistic meta-learner."""
+def evaluate_stack(base_oof, y, n_splits=5, seed=config.SEED, cols=None):
+    """Honest meta OOF via per-fold isotonic calibration + logistic meta-learner.
+
+    cols: optional subset of base columns to stack over (defaults to all).
+    """
     y = pd.Series(np.asarray(y)).reset_index(drop=True)
     bo = base_oof.reset_index(drop=True)
+    if cols is not None:
+        bo = bo[list(cols)]
     skf = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=seed)
     meta_oof = np.zeros(len(y))
 
@@ -78,14 +93,20 @@ def evaluate_stack(base_oof, y, n_splits=5, seed=config.SEED):
     return meta_oof, threshold, f1
 
 
-def fit_final_stack(base_oof, y):
-    """Refit calibrators + meta-learner on the full OOF (for prediction)."""
+def fit_final_stack(base_oof, y, cols=None):
+    """Refit calibrators + meta-learner on the full OOF (for prediction).
+
+    cols: optional subset of base columns to stack over (defaults to all).
+    Returns (calibrators, meta, order) where order is the column list the
+    meta-learner expects at predict time.
+    """
     y = np.asarray(y)
+    bo = base_oof if cols is None else base_oof[list(cols)]
     calibrators = {}
-    z = np.zeros((len(y), base_oof.shape[1]))
-    for j, col in enumerate(base_oof.columns):
-        iso = IsotonicRegression(out_of_bounds="clip").fit(base_oof[col].to_numpy(), y)
+    z = np.zeros((len(y), bo.shape[1]))
+    for j, col in enumerate(bo.columns):
+        iso = IsotonicRegression(out_of_bounds="clip").fit(bo[col].to_numpy(), y)
         calibrators[col] = iso
-        z[:, j] = iso.predict(base_oof[col].to_numpy())
+        z[:, j] = iso.predict(bo[col].to_numpy())
     meta = LogisticRegression(max_iter=1000).fit(z, y)
-    return calibrators, meta
+    return calibrators, meta, list(bo.columns)
