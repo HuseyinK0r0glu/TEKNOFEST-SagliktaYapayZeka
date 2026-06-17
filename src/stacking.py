@@ -20,9 +20,12 @@ import numpy as np
 import pandas as pd
 from sklearn.isotonic import IsotonicRegression
 from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import StratifiedKFold
+from sklearn.metrics import f1_score
+from sklearn.model_selection import RepeatedStratifiedKFold, StratifiedKFold
 
 from src import config, cv, tuning
+
+POS = config.POSITIVE_CLASS
 
 KINDS = tuning.MODEL_KINDS
 
@@ -40,44 +43,110 @@ def _tuned_params(panel: str, kind: str) -> dict:
     return json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
 
 
-def generate_base_oof(panel, X, y, cat_cols, seed=config.SEED):
-    """Return (base_oof DataFrame, per-model single results, full-data models)."""
+# Small panels: a panel below this row count uses Platt (sigmoid) calibration,
+# because isotonic regression overfits the calibration curve at small n.
+_SMALL_PANEL = 400
+
+
+class _SigmoidCalibrator:
+    """Platt scaling: a logistic fit of a 1-D probability onto the label.
+
+    Mirrors IsotonicRegression's .predict(x) -> prob interface so the single-model
+    and stack prediction paths share code. Module-level (not a closure) so joblib
+    can pickle the persisted calibrator.
+    """
+
+    def __init__(self):
+        self.lr = LogisticRegression(max_iter=1000)
+
+    def fit(self, x, y):
+        self.lr.fit(np.asarray(x, dtype=float).reshape(-1, 1), np.asarray(y))
+        return self
+
+    def predict(self, x):
+        return self.lr.predict_proba(np.asarray(x, dtype=float).reshape(-1, 1))[:, 1]
+
+
+def fit_single_calibrator(oof_col, y, n_rows=None):
+    """Calibrate one model's OOF probabilities.
+
+    Isotonic on large panels, Platt/sigmoid on small ones (n < _SMALL_PANEL),
+    where isotonic overfits. Calibration is monotonic, so the model's AUC and its
+    best-threshold F1 are unchanged — the gain is a *meaningful* probability and a
+    threshold that is stable if the test-set class balance differs from train.
+    Returns a fitted object exposing .predict(proba) -> calibrated_proba.
+    """
+    x = np.asarray(oof_col, dtype=float)
+    y = np.asarray(y)
+    if n_rows is not None and n_rows < _SMALL_PANEL:
+        return _SigmoidCalibrator().fit(x, y)
+    return IsotonicRegression(out_of_bounds="clip").fit(x, y)
+
+
+def generate_base_oof(panel, X, y, cat_cols, seed=config.SEED, params_override=None,
+                      n_repeats=None):
+    """Return (base_oof DataFrame, per-model single results, full-data models).
+
+    params_override: optional {kind: param dict} used instead of reading the
+        saved Optuna JSON (e.g. the nested-eval harness passes per-outer-fold
+        params). When None, the on-disk tuned params for `panel` are used.
+    n_repeats: inner-CV repeats (default: env CV_REPEATS). The nested harness
+        passes 1 to keep its inner loop cheap (outer folds give the variance).
+    """
     base_oof = {}
     singles = {}
     full_models = {}
     feature_cols = list(X.columns)
     for kind in KINDS:
-        params = _tuned_params(panel, kind)
+        if params_override is not None:
+            params = params_override.get(kind) or {}
+        else:
+            params = _tuned_params(panel, kind)
         factory = (lambda y_tr, k=kind, p=params: tuning.build_estimator(
             k, p, y_tr, feature_cols, cat_cols))
         cat_kw = tuning.cat_kwarg(kind)
         use_cat = bool(cat_kw and cat_cols)
         fit_fn = (lambda X_tr, y_tr, ck=cat_kw: {ck: list(cat_cols)}) if use_cat else None
+        eval_fn = tuning.eval_kwargs_fn(kind)
 
-        res = cv.run_cv(factory, X, y, cat_cols=cat_cols, fit_kwargs_fn=fit_fn, seed=seed)
+        res = cv.run_cv(factory, X, y, cat_cols=cat_cols, fit_kwargs_fn=fit_fn,
+                        eval_kwargs_fn=eval_fn, seed=seed, n_repeats=n_repeats)
         base_oof[kind] = res["oof"]
         singles[kind] = {"f1": res["f1"], "threshold": res["threshold"], "auc": res["auc"]}
 
         model = factory(pd.Series(np.asarray(y)))
-        model.fit(X, np.asarray(y), **(fit_fn(X, y) if fit_fn else {}))
+        base_kwargs = fit_fn(X, y) if fit_fn else {}
+        tuning.fit_full(model, X, np.asarray(y), kind, fit_kwargs=base_kwargs, seed=seed)
         full_models[kind] = model
 
     return pd.DataFrame(base_oof, index=X.index), singles, full_models
 
 
-def evaluate_stack(base_oof, y, n_splits=5, seed=config.SEED, cols=None):
+def evaluate_stack(base_oof, y, n_splits=5, seed=config.SEED, cols=None,
+                   n_repeats=None):
     """Honest meta OOF via per-fold isotonic calibration + logistic meta-learner.
 
     cols: optional subset of base columns to stack over (defaults to all).
+    n_repeats: meta-CV repeats (default: env CV_REPEATS). The nested harness
+        passes 1 to keep its inner loop cheap.
     """
     y = pd.Series(np.asarray(y)).reset_index(drop=True)
     bo = base_oof.reset_index(drop=True)
     if cols is not None:
         bo = bo[list(cols)]
-    skf = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=seed)
-    meta_oof = np.zeros(len(y))
+    if n_repeats is None:
+        n_repeats = cv.cv_repeats()
+    if n_repeats > 1:
+        splitter = RepeatedStratifiedKFold(
+            n_splits=n_splits, n_repeats=n_repeats, random_state=seed
+        )
+    else:
+        splitter = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=seed)
+    meta_sum = np.zeros(len(y))
+    meta_cnt = np.zeros(len(y))
+    fold_thresholds = []
 
-    for tr, va in skf.split(bo, y):
+    for tr, va in splitter.split(bo, y):
         z_tr = np.zeros((len(tr), bo.shape[1]))
         z_va = np.zeros((len(va), bo.shape[1]))
         for j, col in enumerate(bo.columns):
@@ -87,9 +156,20 @@ def evaluate_stack(base_oof, y, n_splits=5, seed=config.SEED, cols=None):
             z_tr[:, j] = iso.predict(bo[col].iloc[tr].to_numpy())
             z_va[:, j] = iso.predict(bo[col].iloc[va].to_numpy())
         lr = LogisticRegression(max_iter=1000).fit(z_tr, y.iloc[tr].to_numpy())
-        meta_oof[va] = lr.predict_proba(z_va)[:, 1]
+        p_va = lr.predict_proba(z_va)[:, 1]
+        meta_sum[va] += p_va
+        meta_cnt[va] += 1
+        ft, _ = cv.tune_threshold(y.iloc[va].to_numpy(), p_va)
+        fold_thresholds.append(ft)
 
-    threshold, f1 = cv.tune_threshold(y.to_numpy(), meta_oof)
+    meta_oof = meta_sum / np.maximum(meta_cnt, 1)
+    pooled_t, pooled_f1 = cv.tune_threshold(y.to_numpy(), meta_oof)
+    if cv.threshold_agg() == "fold_median" and fold_thresholds:
+        threshold = float(np.median(fold_thresholds))
+        f1 = float(f1_score(y.to_numpy(), (meta_oof >= threshold).astype(int),
+                            pos_label=POS, zero_division=0))
+    else:
+        threshold, f1 = pooled_t, pooled_f1
     return meta_oof, threshold, f1
 
 

@@ -29,8 +29,21 @@ def _load_json(path):
 
 
 def _base_proba(bundle_dir, kind, X):
+    """Raw base-model Pathogenic probability (used by the stack path, which then
+    applies the stack's own calibrators)."""
     model = joblib.load(bundle_dir / f"base_{kind}.joblib")
     return model.predict_proba(X)[:, 1]
+
+
+def _cal_base_proba(bundle_dir, kind, X):
+    """Calibrated base-model probability for the single / mean paths: raw model
+    output passed through the saved per-model single calibrator when present
+    (backward compatible — older bundles without one fall back to raw)."""
+    p = _base_proba(bundle_dir, kind, X)
+    cal_path = bundle_dir / f"calibrator_single_{kind}.joblib"
+    if cal_path.exists():
+        p = joblib.load(cal_path).predict(p)
+    return p
 
 
 def predict_panel(panel: str, df: pd.DataFrame) -> pd.DataFrame:
@@ -47,9 +60,9 @@ def predict_panel(panel: str, df: pd.DataFrame) -> pd.DataFrame:
     strategy = champion["strategy"]
     order = champion["base_order"]
     if strategy == "single":
-        proba = _base_proba(bundle_dir, champion["model"], X)
+        proba = _cal_base_proba(bundle_dir, champion["model"], X)
     elif strategy == "mean":
-        proba = np.mean([_base_proba(bundle_dir, k, X) for k in order], axis=0)
+        proba = np.mean([_cal_base_proba(bundle_dir, k, X) for k in order], axis=0)
     else:  # stacked_all / stacked_trees: calibrate each base, then logistic meta
         calibrators = joblib.load(bundle_dir / f"calibrators_{strategy}.joblib")
         meta = joblib.load(bundle_dir / f"meta_{strategy}.joblib")

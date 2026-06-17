@@ -101,10 +101,14 @@ def make_logreg_l1(params, y_tr, feature_cols, cat_cols) -> Pipeline:
 
 # --- Optuna search spaces (kept small; these models are cheap to fit) ---
 
-def extratrees_space(trial) -> dict:
+def extratrees_space(trial, n_rows=None) -> dict:
+    # On small panels, cap tree DEPTH so the forest cannot memorise individual
+    # rows (n_rows passed by the tuner; ignored when None). The min_samples_leaf
+    # floor stays at 1 so the enqueued default remains in range.
+    small = n_rows is not None and n_rows < 400
     return dict(
         n_estimators=trial.suggest_int("n_estimators", 200, 800, step=100),
-        max_depth=trial.suggest_int("max_depth", 4, 24),
+        max_depth=trial.suggest_int("max_depth", 4, 12 if small else 24),
         min_samples_leaf=trial.suggest_int("min_samples_leaf", 1, 20),
         max_features=trial.suggest_float("max_features", 0.3, 1.0),
         class_weight=trial.suggest_categorical(
@@ -113,7 +117,7 @@ def extratrees_space(trial) -> dict:
     )
 
 
-def logreg_l1_space(trial) -> dict:
+def logreg_l1_space(trial, n_rows=None) -> dict:
     return dict(
         C=trial.suggest_float("C", 1e-3, 20.0, log=True),
         class_weight=trial.suggest_categorical("class_weight", ["balanced", None]),

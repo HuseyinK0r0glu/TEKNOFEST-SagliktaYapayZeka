@@ -65,9 +65,12 @@ def run_panel(panel: str, out_dir) -> list[dict]:
             json.dumps(best_params, indent=2), encoding="utf-8"
         )
         before = prev.get(kind)
-        delta = f"{best_f1 - before:+.4f}" if before is not None else "  n/a "
+        # When the objective is threshold-free (auc/ap) the tuned score is not an
+        # F1, so don't compute a misleading delta against the F1 baseline.
+        same_metric = tuning.OBJECTIVE == "f1"
+        delta = f"{best_f1 - before:+.4f}" if (before is not None and same_metric) else "  n/a "
         before_s = f"{before:.4f}" if before is not None else " n/a  "
-        print(f"  {kind:9s} selected={before_s} -> tuned F1={best_f1:.4f} "
+        print(f"  {kind:9s} selected={before_s} -> tuned {tuning.OBJECTIVE.upper()}={best_f1:.4f} "
               f"(Δ{delta})  [{n_done} trials]", flush=True)
         rows.append({
             "panel": panel, "model": kind, "f1_selected": before,

@@ -139,11 +139,27 @@ def build_features(df: pd.DataFrame, cat_maps=None):
     log_cdf = np.log1p(cdf.clip(lower=0))
     feats["al_log_mean"] = log_cdf.mean(axis=1)
     feats["al_log_max"] = log_cdf.max(axis=1)
+    feats["al_log_min"] = log_cdf.min(axis=1)
     feats["al_log_std"] = log_cdf.std(axis=1)
     # rare-allele rarity: -log10 of the smallest positive value (larger = rarer).
     min_pos = cdf.where(cdf > 0).min(axis=1)
     feats["al_neglog10_min_pos"] = -np.log10(min_pos.clip(lower=1e-12))
     feats["al_n_ultrarare"] = ((cdf > 0) & (cdf < 1e-4)).sum(axis=1)
+
+    # Continuous-predictor profile (within-row, log scale, stateless): the binary
+    # consensus above only covers the binary AL flags, but PAH's signal lives in
+    # the *continuous* in-silico predictor columns. These describe the SHAPE of a
+    # variant's predictor profile (spread + how many annotations are elevated for
+    # this variant) without any cross-row statistic, so they stay leak-free. The
+    # per-panel null-importance selection keeps only the ones that actually help.
+    n_cont = cdf.notna().sum(axis=1)
+    feats["al_log_range"] = log_cdf.max(axis=1) - log_cdf.min(axis=1)
+    feats["al_log_iqr"] = (log_cdf.quantile(0.75, axis=1)
+                           - log_cdf.quantile(0.25, axis=1))
+    row_logmed = log_cdf.median(axis=1)
+    feats["al_frac_above_logmed"] = (
+        log_cdf.gt(row_logmed, axis=0).sum(axis=1) / n_cont.replace(0, np.nan)
+    )
 
     # --- EK aggregations (all EK_* correlate positively with pathogenicity) ---
     edf = df[config.EK_COLS]
@@ -154,11 +170,24 @@ def build_features(df: pd.DataFrame, cat_maps=None):
     feats["ek_std"] = edf.std(axis=1)
 
     eng = pd.DataFrame(feats, index=df.index)
-    # A couple of cheap interactions (trees find the rest).
+    # A few cheap interactions (trees find the rest). The vote×severity pairs link
+    # in-silico consensus to substitution/evidence strength — aimed at the panels
+    # whose signal is concentrated in the AL predictors (PAH); null-importance
+    # prunes them elsewhere. Guarded because the vote features only exist when the
+    # panel has binary AL flags.
     eng["ek_max_x_grantham"] = eng["ek_max"] * eng["grantham"]
     eng["ek_mean_x_completeness"] = eng["ek_mean"] * (1 - eng["pct_missing"])
+    eng["al_logmax_x_ek_max"] = eng["al_log_max"] * eng["ek_max"]
+    if "damaging_vote_ratio" in eng.columns:
+        dvr = eng["damaging_vote_ratio"].fillna(0)
+        eng["votes_x_grantham"] = dvr * eng["grantham"]
+        eng["votes_x_ek_mean"] = dvr * eng["ek_mean"]
 
     # --- Categorical codes (label-independent; +1 so missing/unseen = 0) ---
+    # An all-null categorical (e.g. CAT_6 in PAH) collapses to the constant code 0
+    # here. We keep it rather than drop it so the train/predict column schema stays
+    # identical; null-importance selection then prunes the constant column, so it
+    # never reaches the final models or wastes a categorical slot.
     maps = cat_maps or {}
     cat_data = {}
     cat_cols = []
