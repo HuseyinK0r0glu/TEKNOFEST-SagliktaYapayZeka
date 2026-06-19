@@ -19,3 +19,8 @@ data/processed/
 .DS_Store
 *.swp
 .~lock.*#
+
+old_outputs/
+old_terminal_output.txt
+data-vis
+data-vis.zip
