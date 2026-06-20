@@ -178,6 +178,12 @@ def build_features(df: pd.DataFrame, cat_maps=None):
     eng["ek_max_x_grantham"] = eng["ek_max"] * eng["grantham"]
     eng["ek_mean_x_completeness"] = eng["ek_mean"] * (1 - eng["pct_missing"])
     eng["al_logmax_x_ek_max"] = eng["al_log_max"] * eng["ek_max"]
+    # Annotation-coverage × evidence-strength: Orange's Rank widget flagged the
+    # missingness tier among PAH/GENEL's top features, and t-SNE branches grouped
+    # variants by which tools covered them. This interaction lets the trees route
+    # on "how complete is this variant's annotation AND how strong is its EK
+    # evidence" in one split; null-importance prunes it where it doesn't help.
+    eng["missingtier_x_ekcount"] = eng["missingness_tier"] * eng["ek_count"]
     if "damaging_vote_ratio" in eng.columns:
         dvr = eng["damaging_vote_ratio"].fillna(0)
         eng["votes_x_grantham"] = dvr * eng["grantham"]

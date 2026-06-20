@@ -19,7 +19,7 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import brier_score_loss, roc_auc_score
 
-from src import config, cv, data_io, features, stacking
+from src import augment, config, cv, data_io, features, stacking
 
 
 def _trivial_f1(y) -> float:
@@ -44,7 +44,16 @@ def run_panel(panel: str) -> dict:
         cat_cols = [c for c in cat_cols if c in set(selected)]
     y_arr = np.asarray(y)
 
-    base_oof, singles, full_models = stacking.generate_base_oof(panel, X, y, cat_cols)
+    # Optional GENEL augmentation (PAH by default): extra training rows added to
+    # every CV fold and the full refit, never validated on (honest panel OOF).
+    aug_X, aug_y = augment.build_aug_pool(panel, columns=list(X.columns))
+    aug = (aug_X, aug_y) if aug_X is not None else None
+    if aug is not None:
+        print(f"  [augment] {panel} += {len(aug_X)} GENEL rows in training folds "
+              f"({int((aug_y == 1).sum())} pathogenic / {int((aug_y == 0).sum())} benign)")
+
+    base_oof, singles, full_models = stacking.generate_base_oof(
+        panel, X, y, cat_cols, aug=aug)
 
     # Calibrate each base model's OOF probabilities (monotonic: AUC and best-F1
     # are unchanged, but the emitted probability becomes meaningful and the

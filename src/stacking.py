@@ -84,7 +84,7 @@ def fit_single_calibrator(oof_col, y, n_rows=None):
 
 
 def generate_base_oof(panel, X, y, cat_cols, seed=config.SEED, params_override=None,
-                      n_repeats=None):
+                      n_repeats=None, aug=None):
     """Return (base_oof DataFrame, per-model single results, full-data models).
 
     params_override: optional {kind: param dict} used instead of reading the
@@ -92,11 +92,19 @@ def generate_base_oof(panel, X, y, cat_cols, seed=config.SEED, params_override=N
         params). When None, the on-disk tuned params for `panel` are used.
     n_repeats: inner-CV repeats (default: env CV_REPEATS). The nested harness
         passes 1 to keep its inner loop cheap (outer folds give the variance).
+    aug: optional (X_aug, y_aug) external training rows (e.g. non-PAH GENEL rows).
+        Added to every training fold AND to the full-data refit, never validated
+        on, so the OOF stays an honest panel-only estimate.
     """
     base_oof = {}
     singles = {}
     full_models = {}
     feature_cols = list(X.columns)
+    aug_X, aug_y = aug if aug is not None else (None, None)
+    # Align the augmentation matrix to this (possibly feature-selected) X schema.
+    if aug_X is not None:
+        aug_X = aug_X.reindex(columns=feature_cols)
+        aug = (aug_X, aug_y)
     for kind in KINDS:
         if params_override is not None:
             params = params_override.get(kind) or {}
@@ -110,13 +118,20 @@ def generate_base_oof(panel, X, y, cat_cols, seed=config.SEED, params_override=N
         eval_fn = tuning.eval_kwargs_fn(kind)
 
         res = cv.run_cv(factory, X, y, cat_cols=cat_cols, fit_kwargs_fn=fit_fn,
-                        eval_kwargs_fn=eval_fn, seed=seed, n_repeats=n_repeats)
+                        eval_kwargs_fn=eval_fn, seed=seed, n_repeats=n_repeats,
+                        aug=aug)
         base_oof[kind] = res["oof"]
         singles[kind] = {"f1": res["f1"], "threshold": res["threshold"], "auc": res["auc"]}
 
-        model = factory(pd.Series(np.asarray(y)))
-        base_kwargs = fit_fn(X, y) if fit_fn else {}
-        tuning.fit_full(model, X, np.asarray(y), kind, fit_kwargs=base_kwargs, seed=seed)
+        # Full-data refit (for prediction): panel rows + the whole aug pool.
+        if aug_X is not None:
+            X_full = pd.concat([X, aug_X], axis=0, ignore_index=True)
+            y_full = np.concatenate([np.asarray(y), np.asarray(aug_y)])
+        else:
+            X_full, y_full = X, np.asarray(y)
+        model = factory(pd.Series(y_full))
+        base_kwargs = fit_fn(X_full, y_full) if fit_fn else {}
+        tuning.fit_full(model, X_full, y_full, kind, fit_kwargs=base_kwargs, seed=seed)
         full_models[kind] = model
 
     return pd.DataFrame(base_oof, index=X.index), singles, full_models

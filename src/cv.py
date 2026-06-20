@@ -62,23 +62,46 @@ def tune_threshold(y, proba, lo=0.05, hi=0.95, step=0.005):
     return best_t, float(best_f1)
 
 
+def _append_aug(X_tr, y_tr, aug):
+    """Concatenate an external augmentation set onto a training fold.
+
+    aug is (X_aug, y_aug) already restricted to X_tr's columns; it is appended to
+    the TRAINING rows only (callers never put it in a validation fold), so the OOF
+    estimate stays an honest panel-only number. Returns the combined (X, y).
+    """
+    if aug is None:
+        return X_tr, y_tr
+    X_aug, y_aug = aug
+    X_cat = pd.concat([X_tr, X_aug[X_tr.columns]], axis=0, ignore_index=True)
+    y_cat = pd.concat([pd.Series(np.asarray(y_tr)), pd.Series(np.asarray(y_aug))],
+                      ignore_index=True)
+    return X_cat, y_cat
+
+
 def _fit_fold(make_model, X_tr, y_tr, fit_kwargs_fn, eval_kwargs_fn,
-              early_stop_frac, seed):
+              early_stop_frac, seed, aug=None):
     """Fit one fold's model, optionally with an internal early-stopping split.
 
     When eval_kwargs_fn is given, a stratified slice of the TRAINING fold is held
     out as the early-stopping eval set (never the validation rows, so the OOF
     estimate stays honest). eval_kwargs_fn(X_es, y_es) returns the model-specific
     eval-set fit kwargs (e.g. {"eval_set": [(X_es, y_es)]}).
+
+    aug: optional (X_aug, y_aug) external rows appended to the training fold only
+    (e.g. non-PAH GENEL rows used to augment the small PAH panel).
     """
     if eval_kwargs_fn is None:
-        model = make_model(y_tr)
-        fit_kwargs = fit_kwargs_fn(X_tr, y_tr) if fit_kwargs_fn else {}
-        model.fit(X_tr, y_tr, **fit_kwargs)
+        X_fit, y_fit = _append_aug(X_tr, y_tr, aug)
+        model = make_model(y_fit)
+        fit_kwargs = fit_kwargs_fn(X_fit, y_fit) if fit_kwargs_fn else {}
+        model.fit(X_fit, y_fit, **fit_kwargs)
         return model
+    # Early-stopping slice comes from the PANEL training rows (in-distribution
+    # stopping signal); the augmentation rows are added to the fit part only.
     X_fit, X_es, y_fit, y_es = train_test_split(
         X_tr, y_tr, test_size=early_stop_frac, stratify=y_tr, random_state=seed
     )
+    X_fit, y_fit = _append_aug(X_fit, y_fit, aug)
     model = make_model(y_fit)
     fit_kwargs = fit_kwargs_fn(X_fit, y_fit) if fit_kwargs_fn else {}
     fit_kwargs.update(eval_kwargs_fn(X_es, y_es))
@@ -88,7 +111,7 @@ def _fit_fold(make_model, X_tr, y_tr, fit_kwargs_fn, eval_kwargs_fn,
 
 def run_cv(make_model, X, y, cat_cols=None, n_splits=5, seed=config.SEED,
            fit_kwargs_fn=None, n_repeats=None, eval_kwargs_fn=None,
-           early_stop_frac=0.15):
+           early_stop_frac=0.15, aug=None):
     """Run StratifiedKFold CV, returning OOF probabilities and F1-centric metrics.
 
     make_model(y_train) -> fresh estimator (lets the factory set class weights
@@ -99,6 +122,9 @@ def run_cv(make_model, X, y, cat_cols=None, n_splits=5, seed=config.SEED,
         slice for early stopping. None disables early stopping (default).
     n_repeats: CV repeats (default: env CV_REPEATS). >1 averages each row's OOF
         probability across repeats for a lower-variance estimate.
+    aug: optional (X_aug, y_aug) external rows appended to EVERY training fold but
+        never validated on (e.g. non-PAH GENEL rows). Folds/threshold/metrics are
+        all computed on the panel rows in X/y only, so the OOF stays honest.
     """
     if n_repeats is None:
         n_repeats = cv_repeats()
@@ -110,7 +136,7 @@ def run_cv(make_model, X, y, cat_cols=None, n_splits=5, seed=config.SEED,
         X_tr, X_va = X.iloc[tr_idx], X.iloc[va_idx]
         y_tr, y_va = y.iloc[tr_idx], y.iloc[va_idx]
         model = _fit_fold(make_model, X_tr, y_tr, fit_kwargs_fn,
-                          eval_kwargs_fn, early_stop_frac, seed)
+                          eval_kwargs_fn, early_stop_frac, seed, aug=aug)
         proba = model.predict_proba(X_va)[:, 1]
         oof_writer(va_idx, proba)
         fold_auc.append(roc_auc_score(y_va, proba))

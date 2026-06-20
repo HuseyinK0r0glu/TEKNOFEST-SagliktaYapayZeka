@@ -39,7 +39,16 @@ from sklearn.metrics import f1_score, roc_auc_score
 from sklearn.model_selection import RepeatedStratifiedKFold, StratifiedKFold
 
 import train.finalize_champions as fc
-from src import config, cv, data_io, feature_selection, features, stacking, tuning
+from src import (
+    augment,
+    config,
+    cv,
+    data_io,
+    feature_selection,
+    features,
+    stacking,
+    tuning,
+)
 
 POS = config.POSITIVE_CLASS
 OUTER_SPLITS = int(os.environ.get("NESTED_OUTER_SPLITS", "5"))
@@ -74,13 +83,14 @@ def _outer_splitter(seed):
     return StratifiedKFold(n_splits=OUTER_SPLITS, shuffle=True, random_state=seed)
 
 
-def _params_for_fold(panel, X_tr, y_tr, cat_cols):
+def _params_for_fold(panel, X_tr, y_tr, cat_cols, aug=None):
     """Per-outer-fold hyperparameters: re-tuned (honest) or saved-global (fast)."""
     if RETUNE:
         out = {}
         for kind in stacking.KINDS:
             best, _, _ = tuning.tune_model(
-                kind, X_tr, y_tr, cat_cols, n_trials=N_TRIALS, timeout=TIMEOUT)
+                kind, X_tr, y_tr, cat_cols, n_trials=N_TRIALS, timeout=TIMEOUT,
+                aug=aug)
             out[kind] = best
         return out
     return {kind: stacking._tuned_params(panel, kind) for kind in stacking.KINDS}
@@ -132,9 +142,15 @@ def run_panel(panel: str) -> dict:
     y = pd.Series(np.asarray(y)).reset_index(drop=True)
     X = X.reset_index(drop=True)
 
+    # GENEL augmentation pool (non-PAH rows): never present in any PAH outer fold,
+    # so adding it to outer-train only is leak-free and the outer-test stays a
+    # genuine PAH-only honest estimate of the augmented model.
+    aug_X_full, aug_y_full = augment.build_aug_pool(panel, columns=list(X.columns))
+
     fold_f1, fold_auc, fold_balf1, strategies = [], [], [], []
     print(f"\n=== Nested eval: {panel} (n={len(y)}, outer={OUTER_SPLITS}x{REPEATS}, "
-          f"retune={RETUNE}) ===", flush=True)
+          f"retune={RETUNE}{', +GENEL aug' if aug_X_full is not None else ''}) ===",
+          flush=True)
     for i, (tr, te) in enumerate(_outer_splitter(config.SEED).split(X, y)):
         X_tr_full, y_tr = X.iloc[tr], y.iloc[tr]
         X_te_full, y_te = X.iloc[te], y.iloc[te]
@@ -145,11 +161,13 @@ def run_panel(panel: str) -> dict:
         sel_cat = [c for c in cat_cols if c in set(selected)]
         X_tr, X_te = X_tr_full[selected], X_te_full[selected]
 
-        params = _params_for_fold(panel, X_tr, y_tr, sel_cat)
+        aug = ((aug_X_full[selected], aug_y_full)
+               if aug_X_full is not None else None)
+        params = _params_for_fold(panel, X_tr, y_tr, sel_cat, aug=aug)
         # Inner CV is single-pass (n_repeats=1): the outer folds already give the
         # variance estimate, so repeating the inner loop only burns time.
         base_oof_tr, _, full_models = stacking.generate_base_oof(
-            panel, X_tr, y_tr, sel_cat, params_override=params, n_repeats=1)
+            panel, X_tr, y_tr, sel_cat, params_override=params, n_repeats=1, aug=aug)
 
         strategy, model, threshold, cols = _inner_champion(base_oof_tr, y_tr)
         proba_te = _predict_test(strategy, model, cols, full_models,

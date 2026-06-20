@@ -60,7 +60,11 @@ plans/                  # strategy docs
 
 ## Rules
 
-- Each panel trains/evaluates separately — no pooling, no cross-panel GroupKFold
+- Each panel **evaluates** separately — panel-only OOF/nested, no cross-panel GroupKFold
+- Validated exception (`src/augment.py`): PAH & CFTR borrow GENEL rows NOT in the panel as
+  extra **training** rows only (leak-free; scored on panel rows only). Held-out multi-seed
+  checks: +F1 on PAH, big +AUC on CFTR; KANSER regresses so it is excluded. `AUGMENT_PANELS`
+  env overrides; `AUGMENT=0` disables.
 - Always use `features.build_features()` for training and inference
 - CatBoost gets `cat_cols`; other tree models get numeric matrix
 - CAT column leakage risk: high-purity categories are suspect (`CAT_PURITY_FLAG=0.95`)

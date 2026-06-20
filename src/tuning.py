@@ -47,6 +47,15 @@ def _small(n_rows) -> bool:
     """Small-panel flag — tightens model capacity to curb small-n overfit."""
     return n_rows is not None and n_rows < 400
 
+
+# Upper bound on the scale_pos_weight MULTIPLIER. The base weight is the raw
+# n_neg/n_pos ratio (e.g. PAH ~0.20, CFTR ~0.23): with the old 2.0 cap the
+# effective weight on the imbalanced panels topped out at ~0.4, so the search
+# could never reach the equal-weight (1.0) regime the strategy doc recommends for
+# PAH. 6.0 lets the search span from the raw ratio up through equal weights to
+# benign-up-weighting; the enqueued default (spw_mult=1.0) keeps the floor.
+_SPW_MULT_HI = float(os.environ.get("SPW_MULT_HI", "6.0"))
+
 # All factories share one signature: make(params, y_tr, feature_cols, cat_cols).
 # The boosted-tree factories ignore feature_cols/cat_cols (they receive the
 # categorical column list as a fit kwarg instead); the sklearn-pipeline factories
@@ -71,8 +80,9 @@ def _xgb_space(trial, n_rows=None):
         # Multiplier on the natural n_neg/n_pos class weight. Lets the search
         # trade recall vs precision instead of being locked to the raw ratio —
         # the main lever on the imbalanced panels (PAH 5:1, CFTR 4:1). 1.0 is
-        # the current behaviour (and the enqueued default keeps the floor).
-        spw_mult=trial.suggest_float("spw_mult", 0.5, 2.0, log=True),
+        # the current behaviour (and the enqueued default keeps the floor); the
+        # widened upper bound lets PAH/CFTR reach the equal-weight regime.
+        spw_mult=trial.suggest_float("spw_mult", 0.5, _SPW_MULT_HI, log=True),
     )
 
 
@@ -101,7 +111,7 @@ def _lgbm_space(trial, n_rows=None):
         reg_alpha=trial.suggest_float("reg_alpha", 1e-8, 10.0, log=True),
         reg_lambda=trial.suggest_float("reg_lambda", 1e-8, 10.0, log=True),
         min_split_gain=trial.suggest_float("min_split_gain", 0.0, 1.0),
-        spw_mult=trial.suggest_float("spw_mult", 0.5, 2.0, log=True),
+        spw_mult=trial.suggest_float("spw_mult", 0.5, _SPW_MULT_HI, log=True),
     )
 
 
@@ -211,10 +221,13 @@ def fit_full(model, X, y, model_kind, fit_kwargs=None, seed=config.SEED,
     return model
 
 
-def tune_model(model_kind, X, y, cat_cols, n_trials=40, timeout=150, seed=config.SEED):
+def tune_model(model_kind, X, y, cat_cols, n_trials=40, timeout=150, seed=config.SEED,
+               aug=None):
     """Return (best_params, best_score, n_completed_trials) for one model on one panel.
 
     best_score is the OPTUNA_OBJECTIVE metric (f1/auc/ap) maximised over trials.
+    aug: optional (X_aug, y_aug) external training rows passed through to cv.run_cv
+        so tuning evaluates models in the same augmented regime they ship in.
     """
     space, make, cat_kw = SPACES[model_kind]
     use_cat = bool(cat_kw and cat_cols)
@@ -222,6 +235,8 @@ def tune_model(model_kind, X, y, cat_cols, n_trials=40, timeout=150, seed=config
     eval_fn = eval_kwargs_fn(model_kind)
     feature_cols = list(X.columns)
     n_rows = len(y)
+    if aug is not None and aug[0] is not None:
+        aug = (aug[0].reindex(columns=feature_cols), aug[1])
 
     def objective(trial):
         params = space(trial, n_rows)
@@ -231,7 +246,7 @@ def tune_model(model_kind, X, y, cat_cols, n_trials=40, timeout=150, seed=config
         res = cv.run_cv(
             lambda y_tr: make(params, y_tr, feature_cols, cat_cols), X, y,
             cat_cols=cat_cols, fit_kwargs_fn=fit_fn, eval_kwargs_fn=eval_fn,
-            seed=trial_seed,
+            seed=trial_seed, aug=aug,
         )
         return res.get(OBJECTIVE, res["f1"])
 

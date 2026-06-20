@@ -17,7 +17,7 @@ import sys
 
 import pandas as pd
 
-from src import config, data_io, features, tuning
+from src import augment, config, data_io, features, tuning
 
 N_TRIALS = int(os.environ.get("OPTUNA_TRIALS", "40"))
 TIMEOUT = int(os.environ.get("OPTUNA_TIMEOUT", "150"))
@@ -54,12 +54,16 @@ def run_panel(panel: str, out_dir) -> list[dict]:
         cat_cols = [c for c in cat_cols if c in set(selected)]
     prev = _selected_f1(panel)
 
+    aug_X, aug_y = augment.build_aug_pool(panel, columns=list(X.columns))
+    aug = (aug_X, aug_y) if aug_X is not None else None
+
     print(f"\n=== Panel {panel} (n={len(y)}, features={X.shape[1]}, "
-          f"trials<={N_TRIALS}, timeout={TIMEOUT}s, kinds={KINDS}) ===", flush=True)
+          f"trials<={N_TRIALS}, timeout={TIMEOUT}s, kinds={KINDS}"
+          f"{', +'+str(len(aug_X))+' GENEL aug rows' if aug else ''}) ===", flush=True)
     rows = []
     for kind in KINDS:
         best_params, best_f1, n_done = tuning.tune_model(
-            kind, X, y, cat_cols, n_trials=N_TRIALS, timeout=TIMEOUT
+            kind, X, y, cat_cols, n_trials=N_TRIALS, timeout=TIMEOUT, aug=aug
         )
         (out_dir / f"{panel}_{kind}_best.json").write_text(
             json.dumps(best_params, indent=2), encoding="utf-8"
