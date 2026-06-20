@@ -18,11 +18,21 @@ anything you set explicitly in the environment still wins (setdefault):
     NESTED_EVAL        1            1          (leak-free honest estimate)
     NESTED_RETUNE      0            0          (opt-in only; re-tune per fold = many extra hours)
     NESTED_REPEATS     1            3          (outer-CV repeats; stabilises small n)
+    HOLDOUT_COMPARE    1            1          (train/test A/B of feature-selection methods)
 
 Opt-in anywhere: EARLY_STOP=1 (boosted trees early-stop on a fold-internal slice).
 
+Feature selection (Orange-informed, see train/run_holdout_compare.py):
+    HOLDOUT_COMPARE=1 runs a real train/test split that scores the current
+    null-importance selection against two alternatives (union / relief_pruned)
+    on held-out rows. It is DIAGNOSTIC — it does not change the shipped models.
+    If a method wins there, ADOPT it by re-running selection with, e.g.:
+        SELECTION_METHOD=union python main.py
+    (SELECTION_METHOD defaults to 'null' = current behaviour, unchanged.)
+
 Steps: 1 Baseline -> 2 Feature selection -> 3 Optuna -> 4 Stacking ->
-       5 Finalize -> [6 Nested eval, if NESTED_EVAL]. Outputs land in outputs/.
+       5 Finalize -> [6 Nested eval, if NESTED_EVAL] ->
+       [7 Holdout selection A/B, if HOLDOUT_COMPARE]. Outputs land in outputs/.
 """
 from __future__ import annotations
 
@@ -48,6 +58,9 @@ PROFILES = {
         # the true test number always print together. fast reuses the global
         # hyperparameters per outer fold (no per-fold re-tune) to stay quick.
         "NESTED_EVAL": "1", "NESTED_RETUNE": "0", "NESTED_REPEATS": "1",
+        # Holdout feature-selection A/B (null vs union vs relief_pruned) on a real
+        # train/test split — diagnostic only, does not change the shipped bundle.
+        "HOLDOUT_COMPARE": "1",
     },
     "thorough": {
         "CV_REPEATS": "5", "OPTUNA_TRIALS": "80", "OPTUNA_TIMEOUT": "900",
@@ -59,6 +72,7 @@ PROFILES = {
         # an explicit opt-in only — it re-tunes 5 models on 15 folds and adds many
         # hours; do NOT enable it for a fixed overnight window.
         "NESTED_EVAL": "1", "NESTED_RETUNE": "0", "NESTED_REPEATS": "3",
+        "HOLDOUT_COMPARE": "1",
     },
 }
 
@@ -84,11 +98,16 @@ import train.finalize_champions as finalize_champions  # noqa: E402
 
 _KNOBS = ["CV_REPEATS", "OPTUNA_TRIALS", "OPTUNA_TIMEOUT", "OPTUNA_OBJECTIVE",
           "OPTUNA_SEED_JITTER", "THRESHOLD_AGG", "SELECT_METRIC", "EARLY_STOP",
-          "NESTED_EVAL", "NESTED_RETUNE", "NESTED_REPEATS"]
+          "NESTED_EVAL", "NESTED_RETUNE", "NESTED_REPEATS", "HOLDOUT_COMPARE",
+          "SELECTION_METHOD"]
 
 
 def _nested_on() -> bool:
     return os.environ.get("NESTED_EVAL", "0").strip().lower() in ("1", "true", "yes")
+
+
+def _holdout_on() -> bool:
+    return os.environ.get("HOLDOUT_COMPARE", "0").strip().lower() in ("1", "true", "yes")
 
 
 def _banner(step: int, total: int, name: str) -> None:
@@ -105,7 +124,7 @@ def _elapsed(t0: float) -> str:
 
 def main() -> None:
     panels = [p.upper() for p in sys.argv[1:]] or config.PANELS
-    total = 6 if _nested_on() else 5
+    total = 5 + (1 if _nested_on() else 0) + (1 if _holdout_on() else 0)
     print(f"\nProfile: {PROFILE}")
     print("Knobs:   " + "  ".join(
         f"{k}={os.environ.get(k)}" for k in _KNOBS if os.environ.get(k) is not None))
@@ -144,13 +163,24 @@ def main() -> None:
     finalize_champions.main(panels)
     print(f"\n[step 5 done in {_elapsed(t0)}]")
 
+    step = 5
     # ── Step 6: Nested eval (honest estimate) — optional ──────────────────
     if _nested_on():
-        _banner(6, total, "Nested CV (honest generalization estimate)")
+        step += 1
+        _banner(step, total, "Nested CV (honest generalization estimate)")
         t0 = time.time()
         import train.run_nested_eval as run_nested_eval
         run_nested_eval.main(panels)
-        print(f"\n[step 6 done in {_elapsed(t0)}]")
+        print(f"\n[step {step} done in {_elapsed(t0)}]")
+
+    # ── Step 7: Holdout feature-selection comparison — optional ───────────
+    if _holdout_on():
+        step += 1
+        _banner(step, total, "Holdout A/B: current vs Orange-informed selection")
+        t0 = time.time()
+        import train.run_holdout_compare as run_holdout_compare
+        run_holdout_compare.main(panels)
+        print(f"\n[step {step} done in {_elapsed(t0)}]")
 
     # ── Summary ───────────────────────────────────────────────────────────
     print("\n" + "=" * 60)

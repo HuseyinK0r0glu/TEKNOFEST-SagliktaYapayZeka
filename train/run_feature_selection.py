@@ -10,11 +10,21 @@ Run from the project root:
 """
 from __future__ import annotations
 
+import os
 import sys
 
 import pandas as pd
 
 from src import config, data_io, feature_selection, features, models
+
+# Which feature set to SHIP as {panel}_selected.txt:
+#   "null"          -> the null-importance keep-set (current default behaviour).
+#   "union"         -> null-importance + ReliefF-guarded consensus adds.
+#   "relief_pruned" -> null-importance minus locally-misleading features.
+# Adopt a non-default method only after run_holdout_compare shows it wins on the
+# held-out test set. Selection runs on the FULL panel here (that is how the
+# shipped set is built); the honest estimate still comes from nested/holdout eval.
+SELECTION_METHOD = os.environ.get("SELECTION_METHOD", "null").strip().lower()
 
 
 def _baseline_f1(panel: str) -> dict:
@@ -35,7 +45,24 @@ def run_panel(panel: str) -> list[dict]:
     out_dir.mkdir(parents=True, exist_ok=True)
     table.to_csv(out_dir / f"{panel}_null_importance.csv", index=False)
 
-    selected = table.loc[table["keep"], "feature"].tolist()
+    null_selected = table.loc[table["keep"], "feature"].tolist()
+
+    # Default ships the null-importance set unchanged. SELECTION_METHOD lets a
+    # holdout-validated variant (union / relief_pruned) be shipped instead.
+    if SELECTION_METHOD == "null":
+        selected = null_selected
+    else:
+        from src import multi_filter_selection
+        variants, _ = multi_filter_selection.build_variants(
+            X, y, cat_cols, null_selected=null_selected, verbose=True)
+        if SELECTION_METHOD not in variants:
+            raise SystemExit(
+                f"SELECTION_METHOD={SELECTION_METHOD!r} unknown; "
+                f"expected one of {list(variants)}")
+        selected = variants[SELECTION_METHOD]
+        print(f"  [SELECTION_METHOD={SELECTION_METHOD}] shipping {len(selected)} "
+              f"features (null had {len(null_selected)})")
+
     (out_dir / f"{panel}_selected.txt").write_text("\n".join(selected), encoding="utf-8")
     sel_cat = [c for c in cat_cols if c in set(selected)]
 

@@ -1,0 +1,508 @@
+
+Profile: thorough
+Knobs:   CV_REPEATS=5  OPTUNA_TRIALS=80  OPTUNA_TIMEOUT=900  OPTUNA_OBJECTIVE=auc  OPTUNA_SEED_JITTER=1  THRESHOLD_AGG=fold_median  SELECT_METRIC=auc  NESTED_EVAL=1  NESTED_RETUNE=0  NESTED_REPEATS=3  HOLDOUT_COMPARE=1
+Panels:  ['GENEL', 'KANSER', 'PAH', 'CFTR']
+Output:  /home/huseyink/Desktop/TEKNOFEST/outputs
+
+
+============================================================
+  STEP 1/7 — Baseline (XGB / LGBM / CatBoost)
+============================================================
+
+
+=== Panel GENEL  (n=2931, features=441, cat=8) ===
+  xgboost   F1=0.8945 @ t=0.300 | AUC=0.8522 (fold 0.8468±0.0117) | MCC=0.5430 | P=0.840 R=0.957
+  lightgbm  F1=0.8953 @ t=0.240 | AUC=0.8522 (fold 0.8469±0.0107) | MCC=0.5412 | P=0.833 R=0.967
+  catboost  F1=0.8973 @ t=0.310 | AUC=0.8581 (fold 0.8521±0.0096) | MCC=0.5566 | P=0.843 R=0.959
+
+=== Panel KANSER  (n=388, features=441, cat=8) ===
+  xgboost   F1=0.9225 @ t=0.345 | AUC=0.9279 (fold 0.9283±0.0285) | MCC=0.7340 | P=0.892 R=0.955
+  lightgbm  F1=0.9217 @ t=0.205 | AUC=0.9271 (fold 0.9255±0.0287) | MCC=0.7279 | P=0.881 R=0.966
+  catboost  F1=0.9214 @ t=0.285 | AUC=0.9190 (fold 0.9196±0.0321) | MCC=0.7277 | P=0.884 R=0.963
+
+=== Panel PAH  (n=372, features=441, cat=8) ===
+  xgboost   F1=0.9238 @ t=0.290 | AUC=0.8093 (fold 0.8022±0.0582) | MCC=0.4149 | P=0.876 R=0.977
+  lightgbm  F1=0.9212 @ t=0.265 | AUC=0.8087 (fold 0.7960±0.0520) | MCC=0.3771 | P=0.869 R=0.981
+  catboost  F1=0.9212 @ t=0.300 | AUC=0.8107 (fold 0.7978±0.0560) | MCC=0.3771 | P=0.869 R=0.981
+
+=== Panel CFTR  (n=111, features=441, cat=8) ===
+  xgboost   F1=0.9326 @ t=0.300 | AUC=0.9111 (fold 0.9032±0.0685) | MCC=0.5769 | P=0.874 R=1.000
+  lightgbm  F1=0.9368 @ t=0.295 | AUC=0.9280 (fold 0.9157±0.0830) | MCC=0.6096 | P=0.890 R=0.989
+  catboost  F1=0.9508 @ t=0.580 | AUC=0.9079 (fold 0.8938±0.0717) | MCC=0.7236 | P=0.935 R=0.967
+
+=== Best model per panel (by F1) ===
+  CFTR    -> catboost  F1=0.9508 @ t=0.580
+  GENEL   -> catboost  F1=0.8973 @ t=0.310
+  KANSER  -> xgboost   F1=0.9225 @ t=0.345
+  PAH     -> xgboost   F1=0.9238 @ t=0.290
+
+[written] /home/huseyink/Desktop/TEKNOFEST/outputs/baseline/baseline_leaderboard.csv
+
+[step 1 done in 39m 32s]
+
+============================================================
+  STEP 2/7 — Feature Selection (null-importance)
+============================================================
+
+
+=== Panel GENEL: kept 60/441 features (4 categorical) ===
+  top 12 by gain_score: n_missing_al, AL_1, population_block_missing, AL_59, EK_7, CAT_6, AL_71, AL_16, AL_287, AL_215, n_missing_cat, AL_327
+  xgboost   all=0.8945 -> selected F1=0.8984 (Δ+0.0039) @ t=0.240 | AUC=0.8550
+  lightgbm  all=0.8953 -> selected F1=0.8991 (Δ+0.0037) @ t=0.215 | AUC=0.8580
+  catboost  all=0.8973 -> selected F1=0.8990 (Δ+0.0018) @ t=0.255 | AUC=0.8642
+
+=== Panel KANSER: kept 34/441 features (0 categorical) ===
+  top 12 by gain_score: AL_215, AL_184, AL_16, ek_mean, AL_3, AL_24, AL_322, damaging_vote_count, AL_201, AL_13, n_missing_total, AL_329
+  xgboost   all=0.9225 -> selected F1=0.9209 (Δ-0.0017) @ t=0.290 | AUC=0.9439
+  lightgbm  all=0.9217 -> selected F1=0.9295 (Δ+0.0078) @ t=0.250 | AUC=0.9436
+  catboost  all=0.9214 -> selected F1=0.9273 (Δ+0.0058) @ t=0.330 | AUC=0.9468
+
+=== Panel PAH: kept 32/441 features (0 categorical) ===
+  top 12 by gain_score: AL_72, AL_49, votes_x_grantham, AL_246, AL_171, AL_283, AL_87, AL_328, AL_7, AL_323, EK_7, al_cont_mean
+  xgboost   all=0.9238 -> selected F1=0.9304 (Δ+0.0067) @ t=0.310 | AUC=0.8952
+  lightgbm  all=0.9212 -> selected F1=0.9278 (Δ+0.0066) @ t=0.310 | AUC=0.8896
+  catboost  all=0.9212 -> selected F1=0.9252 (Δ+0.0040) @ t=0.200 | AUC=0.8741
+
+=== Panel CFTR: kept 15/441 features (0 categorical) ===
+  top 12 by gain_score: al_n_ultrarare, AL_7, ek_max, hydropathy_2, al_cont_mean, EK_2, AL_327, ek_std, AL_298, absd_pi, AL_326, AL_126
+  xgboost   all=0.9326 -> selected F1=0.9524 (Δ+0.0197) @ t=0.255 | AUC=0.9667
+  lightgbm  all=0.9368 -> selected F1=0.9626 (Δ+0.0257) @ t=0.280 | AUC=0.9772
+  catboost  all=0.9508 -> selected F1=0.9617 (Δ+0.0109) @ t=0.395 | AUC=0.9587
+
+[written] /home/huseyink/Desktop/TEKNOFEST/outputs/feature_selection/selection_summary.csv
+
+[step 2 done in 5m 12s]
+
+============================================================
+  STEP 3/7 — Optuna Hyperparameter Tuning
+============================================================
+
+
+=== Panel GENEL (n=2931, features=60, trials<=80, timeout=900s, kinds=['xgboost', 'lightgbm', 'catboost', 'extratrees', 'logreg_l1']) ===
+  xgboost   selected=0.8984 -> tuned AUC=0.8640 (Δ  n/a )  [69 trials]
+  lightgbm  selected=0.8991 -> tuned AUC=0.8657 (Δ  n/a )  [72 trials]
+  catboost  selected=0.8990 -> tuned AUC=0.8669 (Δ  n/a )  [13 trials]
+  extratrees selected= n/a   -> tuned AUC=0.8552 (Δ  n/a )  [35 trials]
+  logreg_l1 selected= n/a   -> tuned AUC=0.8243 (Δ  n/a )  [80 trials]
+
+=== Panel KANSER (n=388, features=34, trials<=80, timeout=900s, kinds=['xgboost', 'lightgbm', 'catboost', 'extratrees', 'logreg_l1']) ===
+  xgboost   selected=0.9209 -> tuned AUC=0.9486 (Δ  n/a )  [80 trials]
+  lightgbm  selected=0.9295 -> tuned AUC=0.9483 (Δ  n/a )  [80 trials]
+  catboost  selected=0.9273 -> tuned AUC=0.9494 (Δ  n/a )  [73 trials]
+  extratrees selected= n/a   -> tuned AUC=0.9333 (Δ  n/a )  [61 trials]
+  logreg_l1 selected= n/a   -> tuned AUC=0.9102 (Δ  n/a )  [80 trials]
+
+=== Panel PAH (n=372, features=32, trials<=80, timeout=900s, kinds=['xgboost', 'lightgbm', 'catboost', 'extratrees', 'logreg_l1']) ===
+  xgboost   selected=0.9304 -> tuned AUC=0.9006 (Δ  n/a )  [80 trials]
+  lightgbm  selected=0.9278 -> tuned AUC=0.9021 (Δ  n/a )  [80 trials]
+  catboost  selected=0.9252 -> tuned AUC=0.8932 (Δ  n/a )  [77 trials]
+  extratrees selected= n/a   -> tuned AUC=0.8606 (Δ  n/a )  [64 trials]
+  logreg_l1 selected= n/a   -> tuned AUC=0.7831 (Δ  n/a )  [80 trials]
+
+=== Panel CFTR (n=111, features=15, trials<=80, timeout=900s, kinds=['xgboost', 'lightgbm', 'catboost', 'extratrees', 'logreg_l1']) ===
+  xgboost   selected=0.9524 -> tuned AUC=0.9857 (Δ  n/a )  [80 trials]
+  lightgbm  selected=0.9626 -> tuned AUC=0.9772 (Δ  n/a )  [80 trials]
+  catboost  selected=0.9617 -> tuned AUC=0.9799 (Δ  n/a )  [80 trials]
+  extratrees selected= n/a   -> tuned AUC=0.9434 (Δ  n/a )  [63 trials]
+  logreg_l1 selected= n/a   -> tuned AUC=0.9101 (Δ  n/a )  [80 trials]
+
+[written] /home/huseyink/Desktop/TEKNOFEST/outputs/optuna/optuna_summary.csv
+
+[step 3 done in 227m 9s]
+
+============================================================
+  STEP 4/7 — Stacking (calibrated meta-learner + OOF)
+============================================================
+
+
+=== Panel GENEL (n=2931, features=60, trivial-F1=0.8461) ===
+  base xgboost    F1=0.9002 (AUC 0.8603)
+  base lightgbm   F1=0.8991 (AUC 0.8621)
+  base catboost   F1=0.8976 (AUC 0.8651)
+  base extratrees F1=0.8916 (AUC 0.8538)
+  base logreg_l1  F1=0.8832 (AUC 0.8225)
+  best single    : xgboost F1=0.9002 (lift +0.0542)
+  mean ensemble  : F1=0.9001 @ t=0.335
+  stacked_all   : F1=0.8993 @ t=0.385 (Δ vs best single -0.0009)
+  stacked_trees : F1=0.9005 @ t=0.435 (Δ vs best single +0.0003)
+
+=== Panel KANSER (n=388, features=34, trivial-F1=0.8171) ===
+  base xgboost    F1=0.9256 (AUC 0.9482)
+  base lightgbm   F1=0.9245 (AUC 0.9461)
+  base catboost   F1=0.9304 (AUC 0.9450)
+  base extratrees F1=0.9278 (AUC 0.9302)
+  base logreg_l1  F1=0.9143 (AUC 0.9005)
+  best single    : catboost F1=0.9304 (lift +0.1133)
+  mean ensemble  : F1=0.9360 @ t=0.405
+  stacked_all   : F1=0.9326 @ t=0.350 (Δ vs best single +0.0022)
+  stacked_trees : F1=0.9236 @ t=0.375 (Δ vs best single -0.0068)
+
+=== Panel PAH (n=372, features=32, trivial-F1=0.9091) ===
+  base xgboost    F1=0.9294 (AUC 0.8945)
+  base lightgbm   F1=0.9294 (AUC 0.8979)
+  base catboost   F1=0.9321 (AUC 0.8777)
+  base extratrees F1=0.9170 (AUC 0.8539)
+  base logreg_l1  F1=0.9205 (AUC 0.7802)
+  best single    : catboost F1=0.9321 (lift +0.0230)
+  mean ensemble  : F1=0.9325 @ t=0.565
+  stacked_all   : F1=0.9271 @ t=0.420 (Δ vs best single -0.0050)
+  stacked_trees : F1=0.9294 @ t=0.540 (Δ vs best single -0.0028)
+
+=== Panel CFTR (n=111, features=15, trivial-F1=0.8955) ===
+  base xgboost    F1=0.9524 (AUC 0.9698)
+  base lightgbm   F1=0.9474 (AUC 0.9741)
+  base catboost   F1=0.9519 (AUC 0.9720)
+  base extratrees F1=0.9474 (AUC 0.9392)
+  base logreg_l1  F1=0.9263 (AUC 0.8720)
+  best single    : xgboost F1=0.9524 (lift +0.0569)
+  mean ensemble  : F1=0.9667 @ t=0.685
+  stacked_all   : F1=0.9622 @ t=0.235 (Δ vs best single +0.0098)
+  stacked_trees : F1=0.9674 @ t=0.340 (Δ vs best single +0.0150)
+
+=== Final per-panel F1 (best stack variant) ===
+  GENEL   stacked_trees F1=0.9005 @ t=0.435  (best single 0.9002)
+  KANSER  stacked_all   F1=0.9326 @ t=0.350  (best single 0.9304)
+  PAH     stacked_trees F1=0.9294 @ t=0.540  (best single 0.9321)
+  CFTR    stacked_trees F1=0.9674 @ t=0.340  (best single 0.9524)
+
+[written] /home/huseyink/Desktop/TEKNOFEST/outputs/stacking/stacking_summary.csv
+
+[step 4 done in 4m 20s]
+
+============================================================
+  STEP 5/7 — Finalize Champions (one-SE rule)
+============================================================
+
+=== Champion per panel (one-SE rule on auc) ===
+  GENEL   champion = catboost      AUC=0.8689±0.0080 | F1=0.8994±0.0051 @ t=0.380 lift=+0.0533  (simpler pick over best auc)
+  KANSER  champion = xgboost       AUC=0.9482±0.0120 | F1=0.9348±0.0105 @ t=0.635 lift=+0.1177
+  PAH     champion = lightgbm      AUC=0.8979±0.0217 | F1=0.9325±0.0110 @ t=0.780 lift=+0.0234
+  CFTR    champion = lightgbm      AUC=0.9741±0.0147 | F1=0.9780±0.0105 @ t=0.645 lift=+0.0825
+
+[written] /home/huseyink/Desktop/TEKNOFEST/outputs/models/champions_summary.csv
+
+[step 5 done in 0m 18s]
+
+============================================================
+  STEP 6/7 — Nested CV (honest generalization estimate)
+============================================================
+
+
+=== Nested eval: GENEL (n=2931, outer=5x3, retune=False) ===
+  outer fold  1: single        F1=0.8901 AUC=0.8632 balF1=0.7627 @ t=0.230 (kept 55 feats)
+  outer fold  2: single        F1=0.9043 AUC=0.8638 balF1=0.7924 @ t=0.385 (kept 54 feats)
+  outer fold  3: single        F1=0.8985 AUC=0.8601 balF1=0.7801 @ t=0.300 (kept 52 feats)
+  outer fold  4: single        F1=0.8949 AUC=0.8395 balF1=0.7767 @ t=0.320 (kept 54 feats)
+  outer fold  5: single        F1=0.8860 AUC=0.8323 balF1=0.7651 @ t=0.365 (kept 55 feats)
+  outer fold  6: single        F1=0.9051 AUC=0.8501 balF1=0.8033 @ t=0.380 (kept 51 feats)
+  outer fold  7: single        F1=0.8968 AUC=0.8535 balF1=0.7752 @ t=0.250 (kept 52 feats)
+  outer fold  8: single        F1=0.8727 AUC=0.8255 balF1=0.7382 @ t=0.290 (kept 52 feats)
+  outer fold  9: single        F1=0.8957 AUC=0.8623 balF1=0.7796 @ t=0.340 (kept 52 feats)
+  outer fold 10: single        F1=0.9003 AUC=0.8602 balF1=0.7908 @ t=0.400 (kept 60 feats)
+  outer fold 11: single        F1=0.8955 AUC=0.8569 balF1=0.7871 @ t=0.345 (kept 52 feats)
+  outer fold 12: single        F1=0.8957 AUC=0.8494 balF1=0.7852 @ t=0.340 (kept 54 feats)
+  outer fold 13: single        F1=0.8920 AUC=0.8424 balF1=0.7761 @ t=0.400 (kept 50 feats)
+  outer fold 14: single        F1=0.8899 AUC=0.8592 balF1=0.7842 @ t=0.395 (kept 54 feats)
+  outer fold 15: single        F1=0.8971 AUC=0.8487 balF1=0.7800 @ t=0.375 (kept 56 feats)
+
+=== Nested eval: KANSER (n=388, outer=5x3, retune=False) ===
+  outer fold  1: single        F1=0.9009 AUC=0.9051 balF1=0.8351 @ t=0.360 (kept 31 feats)
+  outer fold  2: single        F1=0.8909 AUC=0.8866 balF1=0.8253 @ t=0.290 (kept 31 feats)
+  outer fold  3: single        F1=0.9643 AUC=0.9614 balF1=0.9231 @ t=0.430 (kept 29 feats)
+  outer fold  4: single        F1=0.9815 AUC=0.9882 balF1=0.9600 @ t=0.285 (kept 33 feats)
+  outer fold  5: single        F1=0.8627 AUC=0.8789 balF1=0.8145 @ t=0.255 (kept 37 feats)
+  outer fold  6: single        F1=0.9381 AUC=0.9406 balF1=0.8797 @ t=0.160 (kept 29 feats)
+  outer fold  7: single        F1=0.9123 AUC=0.9321 balF1=0.8387 @ t=0.175 (kept 34 feats)
+  outer fold  8: single        F1=0.8829 AUC=0.8951 balF1=0.8099 @ t=0.225 (kept 30 feats)
+  outer fold  9: single        F1=0.8991 AUC=0.9072 balF1=0.8343 @ t=0.410 (kept 31 feats)
+  outer fold 10: single        F1=0.9009 AUC=0.9410 balF1=0.8287 @ t=0.350 (kept 29 feats)
+  outer fold 11: single        F1=0.9464 AUC=0.9352 balF1=0.8964 @ t=0.515 (kept 34 feats)
+  outer fold 12: single        F1=0.9138 AUC=0.9182 balF1=0.8330 @ t=0.165 (kept 29 feats)
+  outer fold 13: single        F1=0.9217 AUC=0.9174 balF1=0.8480 @ t=0.180 (kept 31 feats)
+  outer fold 14: single        F1=0.9143 AUC=0.9607 balF1=0.8741 @ t=0.435 (kept 28 feats)
+  outer fold 15: single        F1=0.8991 AUC=0.8719 balF1=0.8343 @ t=0.180 (kept 31 feats)
+
+=== Nested eval: PAH (n=372, outer=5x3, retune=False) ===
+  outer fold  1: mean          F1=0.8939 AUC=0.6948 balF1=0.6803 @ t=0.350 (kept 29 feats)
+  outer fold  2: single        F1=0.8923 AUC=0.7370 balF1=0.6917 @ t=0.380 (kept 28 feats)
+  outer fold  3: single        F1=0.9091 AUC=0.7648 balF1=0.6910 @ t=0.250 (kept 33 feats)
+  outer fold  4: single        F1=0.9375 AUC=0.8145 balF1=0.7843 @ t=0.320 (kept 32 feats)
+  outer fold  5: single        F1=0.9242 AUC=0.9301 balF1=0.7198 @ t=0.125 (kept 32 feats)
+  outer fold  6: single        F1=0.9062 AUC=0.7655 balF1=0.7335 @ t=0.555 (kept 30 feats)
+  outer fold  7: single        F1=0.9062 AUC=0.7370 balF1=0.7335 @ t=0.290 (kept 26 feats)
+  outer fold  8: single        F1=0.9231 AUC=0.8555 balF1=0.7347 @ t=0.280 (kept 30 feats)
+  outer fold  9: single        F1=0.9091 AUC=0.8683 balF1=0.6910 @ t=0.385 (kept 31 feats)
+  outer fold 10: single        F1=0.8819 AUC=0.7796 balF1=0.6809 @ t=0.280 (kept 26 feats)
+  outer fold 11: single        F1=0.8976 AUC=0.8052 balF1=0.7254 @ t=0.570 (kept 29 feats)
+  outer fold 12: single        F1=0.8760 AUC=0.8002 balF1=0.7381 @ t=0.515 (kept 28 feats)
+  outer fold 13: single        F1=0.9023 AUC=0.7863 balF1=0.6710 @ t=0.330 (kept 31 feats)
+  outer fold 14: single        F1=0.9173 AUC=0.7285 balF1=0.6985 @ t=0.050 (kept 31 feats)
+  outer fold 15: single        F1=0.9394 AUC=0.8239 balF1=0.7500 @ t=0.260 (kept 29 feats)
+
+=== Nested eval: CFTR (n=111, outer=5x3, retune=False) ===
+  outer fold  1: single        F1=0.8947 AUC=0.9111 balF1=0.7424 @ t=0.300 (kept 17 feats)
+  outer fold  2: single        F1=0.9189 AUC=0.7222 balF1=0.7727 @ t=0.725 (kept 17 feats)
+  outer fold  3: single        F1=0.9730 AUC=0.8889 balF1=0.8889 @ t=0.305 (kept 21 feats)
+  outer fold  4: single        F1=0.9091 AUC=0.8889 balF1=0.9091 @ t=0.560 (kept 13 feats)
+  outer fold  5: single        F1=0.9474 AUC=0.9583 balF1=0.8000 @ t=0.385 (kept 20 feats)
+  outer fold  6: single        F1=0.8947 AUC=0.8889 balF1=0.7424 @ t=0.310 (kept 20 feats)
+  outer fold  7: single        F1=0.8947 AUC=0.7222 balF1=0.7010 @ t=0.555 (kept 16 feats)
+  outer fold  8: single        F1=0.9474 AUC=0.9028 balF1=0.8000 @ t=0.465 (kept 14 feats)
+  outer fold  9: single        F1=0.9189 AUC=0.8889 balF1=0.7727 @ t=0.270 (kept 13 feats)
+  outer fold 10: single        F1=0.9474 AUC=0.9444 balF1=0.8000 @ t=0.465 (kept 20 feats)
+  outer fold 11: single        F1=0.9000 AUC=0.9333 balF1=0.7143 @ t=0.530 (kept 13 feats)
+  outer fold 12: single        F1=0.9730 AUC=1.0000 balF1=0.8889 @ t=0.510 (kept 16 feats)
+  outer fold 13: single        F1=0.8947 AUC=0.9167 balF1=0.7010 @ t=0.305 (kept 17 feats)
+  outer fold 14: single        F1=0.9474 AUC=1.0000 balF1=0.8000 @ t=0.305 (kept 19 feats)
+  outer fold 15: single        F1=0.8333 AUC=0.6250 balF1=0.6452 @ t=0.480 (kept 19 feats)
+
+=== Nested (honest) vs pooled OOF ===
+  GENEL   nested F1=0.8943±0.0076  AUC=0.8511  balF1=0.7784  pooled=0.8993751346692523  gap=+0.0051
+  KANSER  nested F1=0.9153±0.0302  AUC=0.9226  balF1=0.8557  pooled=0.9348230912476724  gap=+0.0196
+  PAH     nested F1=0.9078±0.0178  AUC=0.7927  balF1=0.7149  pooled=0.932475884244373  gap=+0.0247
+  CFTR    nested F1=0.9196±0.0358  AUC=0.8794  balF1=0.7786  pooled=0.978021978021978  gap=+0.0584
+  (balF1 = F1 if the test set were 50/50 at the locked threshold — robustness to an unknown competition balance)
+
+[written] /home/huseyink/Desktop/TEKNOFEST/outputs/nested_eval/nested_summary.csv
+
+[step 6 done in 39m 12s]
+
+============================================================
+  STEP 7/7 — Holdout A/B: current vs Orange-informed selection
+============================================================
+
+========================================================================
+  HOLDOUT FEATURE-SELECTION COMPARISON
+  test_size=0.2  methods=['null', 'union', 'relief_pruned']  add_k=25  seed=42
+  CV_REPEATS=5  THRESHOLD_AGG=fold_median
+========================================================================
+
+########################################################################
+#  PANEL GENEL
+########################################################################
+
+  Split: train=2344 rows (1719 pathogenic / 625 benign) | test=587 rows (430 pathogenic / 157 benign)
+  Held-out test trivial F1 (predict-all-pathogenic) = 0.8456  <- any real model must clearly beat this
+
+  Selecting features on the TRAIN split (each method, leak-free):
+    [filters] null-importance kept 52 features
+    [union]   +0 consensus features (top-25 ReliefF AND IG/ANOVA, ReliefF>=0): []
+    [pruned]  -10 locally-misleading features (ReliefF<0, not top-25 IG): ['AL_328', 'AL_287', 'AL_19', 'AL_319', 'AL_11', 'AL_7', 'AL_224', 'AL_311'] ...
+
+  Orange-style feature ranking on the TRAIN split (top 15):
+    (Info Gain = global predictiveness; ReliefF = local neighbour separation; negative ReliefF = locally misleading)
+      feature                 InfoGain   ANOVA_F   ReliefF
+      n_missing_total           0.1338    107.10    0.0541
+      pct_missing               0.1242    107.10    0.0541
+      n_missing_al              0.1233    113.82    0.0543
+      al_cont_count             0.1227    121.29    0.0623
+      al_cont_std               0.0917     75.56    0.0731
+      al_log_std                0.0877     37.17    0.0699
+      al_frac_above_logmed      0.0848      3.36    0.0145
+      al_cont_mean              0.0702     24.72    0.0826
+      EK_7                      0.0677    278.51    0.0706
+      al_logmax_x_ek_max        0.0656     33.36    0.0640
+      ek_mean                   0.0632    264.73    0.0482
+      AL_23                     0.0607     13.10    0.0131
+      AL_16                     0.0603     13.57    0.0170
+      AL_24                     0.0572     11.66    0.0085
+      AL_6                      0.0563     10.85    0.0002
+
+  Training + scoring each method on the held-out test set:
+
+    >> method='null': 52 features
+
+    >> method='union': 52 features  (identical to null — no change to evaluate)
+
+    >> method='relief_pruned': 42 features
+
+  --- GENEL: held-out test results (honest, apples-to-apples) ---
+      method         #feat strategy       TEST_F1 TEST_AUC   prec    rec  trainF1     gap
+      null              52 catboost        0.8926   0.8652  0.860  0.928   0.8968 +0.0041 (base)  
+      union             52 catboost        0.8926   0.8652  0.860  0.928   0.8968 +0.0041 (+0.0000)
+      relief_pruned     42 catboost        0.8948   0.8674  0.854  0.940   0.8955 +0.0007 (+0.0022)
+
+  VERDICT [GENEL]: 'relief_pruned' edged null by only +0.0022 — within noise on 3 methods. Treat as a TIE; prefer the simpler 'null' unless it repeats.
+
+########################################################################
+#  PANEL KANSER
+########################################################################
+
+  Split: train=310 rows (214 pathogenic / 96 benign) | test=78 rows (54 pathogenic / 24 benign)
+  Held-out test trivial F1 (predict-all-pathogenic) = 0.8182  <- any real model must clearly beat this
+
+  Selecting features on the TRAIN split (each method, leak-free):
+    [filters] null-importance kept 36 features
+    [union]   +3 consensus features (top-25 ReliefF AND IG/ANOVA, ReliefF>=0): ['n_missing_cat', 'population_block_missing', 'ek_std']
+    [pruned]  -14 locally-misleading features (ReliefF<0, not top-25 IG): ['AL_215', 'AL_184', 'AL_79', 'AL_3', 'AL_265', 'AL_230', 'AL_4', 'AL_224'] ...
+
+  Orange-style feature ranking on the TRAIN split (top 15):
+    (Info Gain = global predictiveness; ReliefF = local neighbour separation; negative ReliefF = locally misleading)
+      feature                 InfoGain   ANOVA_F   ReliefF
+      al_cont_count             0.2418    105.26    0.1677
+      n_missing_al              0.2348     96.05    0.1577
+      pct_missing               0.2281     92.13    0.1522
+      n_missing_total           0.2174     92.13    0.1522
+      CAT_1                     0.2137     49.78    0.2167
+      n_missing_cat             0.2131     23.78    0.3821
+      al_cont_mean              0.2049     45.82    0.0956
+      al_cont_std               0.2049     74.69    0.1255
+      al_log_std                0.2032     47.45    0.2346
+      al_logmax_x_ek_max        0.2020     47.22    0.1079
+      AL_8                      0.2008      5.10    0.0563
+      ek_mean                   0.1947     88.86    0.2838
+      AL_9                      0.1829      0.07   -0.0119
+      AL_25                     0.1784      1.04   -0.0075
+      votes_x_ek_mean           0.1739      6.14    0.2860
+
+  Training + scoring each method on the held-out test set:
+
+    >> method='null': 36 features
+
+    >> method='union': 39 features
+
+    >> method='relief_pruned': 22 features
+
+  --- KANSER: held-out test results (honest, apples-to-apples) ---
+      method         #feat strategy       TEST_F1 TEST_AUC   prec    rec  trainF1     gap
+      null              36 lightgbm        0.8909   0.8688  0.875  0.907   0.9312 +0.0403 (base)  
+      union             39 lightgbm        0.8785   0.8704  0.887  0.870   0.9384 +0.0599 (-0.0124)
+      relief_pruned     22 lightgbm        0.9107   0.8742  0.879  0.944   0.9269 +0.0162 (+0.0198)
+
+  VERDICT [KANSER]: 'relief_pruned' WINS by +0.0198 held-out F1 (0.8909 -> 0.9107). Worth shipping: SELECTION_METHOD=relief_pruned
+
+########################################################################
+#  PANEL PAH
+########################################################################
+
+  Split: train=297 rows (248 pathogenic / 49 benign) | test=75 rows (62 pathogenic / 13 benign)
+  Held-out test trivial F1 (predict-all-pathogenic) = 0.9051  <- any real model must clearly beat this
+
+  Selecting features on the TRAIN split (each method, leak-free):
+    [filters] null-importance kept 28 features
+    [union]   +6 consensus features (top-25 ReliefF AND IG/ANOVA, ReliefF>=0): ['EK_5', 'damaging_vote_ratio', 'AL_330', 'blosum45', 'AL_314', 'blosum62']
+    [pruned]  -5 locally-misleading features (ReliefF<0, not top-25 IG): ['AL_43', 'AL_246', 'AL_328', 'AL_49', 'AL_8']
+
+  Orange-style feature ranking on the TRAIN split (top 15):
+    (Info Gain = global predictiveness; ReliefF = local neighbour separation; negative ReliefF = locally misleading)
+      feature                 InfoGain   ANOVA_F   ReliefF
+      pct_missing               0.0908      0.08    0.1649
+      n_missing_total           0.0894      0.08    0.1649
+      al_n_ultrarare            0.0862      0.01    0.1391
+      AL_141                    0.0861      0.07    0.0393
+      n_missing_al              0.0842      0.06    0.1670
+      al_n_rare                 0.0833      0.11    0.1683
+      al_cont_count             0.0820      0.09    0.1702
+      EK_7                      0.0798     24.73    0.2126
+      AL_298                    0.0782      1.00   -0.0196
+      AL_98                     0.0767      1.12   -0.0044
+      CAT_2                     0.0749      2.55    0.0958
+      ek_mean_x_completeness    0.0716      2.82    0.1027
+      EK_5                      0.0698      8.96    0.3260
+      AL_272                    0.0677      0.00    0.0000
+      AL_123                    0.0652      4.19    0.0314
+
+  Training + scoring each method on the held-out test set:
+
+    >> method='null': 28 features
+
+    >> method='union': 34 features
+
+    >> method='relief_pruned': 23 features
+
+  --- PAH: held-out test results (honest, apples-to-apples) ---
+      method         #feat strategy       TEST_F1 TEST_AUC   prec    rec  trainF1     gap
+      null              28 lightgbm        0.9104   0.7593  0.847  0.984   0.9423 +0.0319 (base)  
+      union             34 lightgbm        0.9008   0.7407  0.855  0.952   0.9398 +0.0390 (-0.0097)
+      relief_pruned     23 lightgbm        0.9147   0.7146  0.881  0.952   0.9398 +0.0250 (+0.0043)
+
+  VERDICT [PAH]: 'relief_pruned' edged null by only +0.0043 — within noise on 3 methods. Treat as a TIE; prefer the simpler 'null' unless it repeats.
+
+########################################################################
+#  PANEL CFTR
+########################################################################
+
+  Split: train=88 rows (71 pathogenic / 17 benign) | test=23 rows (19 pathogenic / 4 benign)
+  Held-out test trivial F1 (predict-all-pathogenic) = 0.9048  <- any real model must clearly beat this
+
+  Selecting features on the TRAIN split (each method, leak-free):
+    [filters] null-importance kept 22 features
+    [union]   +11 consensus features (top-25 ReliefF AND IG/ANOVA, ReliefF>=0): ['EK_9', 'EK_6', 'votes_x_ek_mean', 'EK_7', 'blosum45', 'ek_mean', 'blosum62', 'blosum80'] ...
+    [pruned]  -1 locally-misleading features (ReliefF<0, not top-25 IG): ['AL_7']
+
+  Orange-style feature ranking on the TRAIN split (top 15):
+    (Info Gain = global predictiveness; ReliefF = local neighbour separation; negative ReliefF = locally misleading)
+      feature                 InfoGain   ANOVA_F   ReliefF
+      absd_weight               0.1863      4.94   -0.0077
+      ek_max                    0.1787     24.53    0.6188
+      al_logmax_x_ek_max        0.1745      1.47    0.2070
+      d_weight                  0.1676      0.14   -0.0462
+      ek_std                    0.1607     24.70    0.6450
+      n_tools_available         0.1387      0.04    0.1941
+      d_pi                      0.1383      0.26    0.0194
+      EK_9                      0.1343     34.63    0.7253
+      EK_6                      0.1308     21.21    0.5031
+      votes_x_ek_mean           0.1281      5.23    0.3580
+      EK_7                      0.1271     30.04    0.7368
+      al_frac_above_logmed      0.1243      0.23   -0.0338
+      AL_251                    0.1242      0.22    0.1361
+      n_missing_al              0.1209      0.14    0.2017
+      AL_296                    0.1186      1.35   -0.0003
+
+  Training + scoring each method on the held-out test set:
+
+    >> method='null': 22 features
+
+    >> method='union': 33 features
+
+    >> method='relief_pruned': 21 features
+
+  --- CFTR: held-out test results (honest, apples-to-apples) ---
+      method         #feat strategy       TEST_F1 TEST_AUC   prec    rec  trainF1     gap
+      null              22 logreg_l1       0.8947   0.6447  0.895  0.895   0.9718 +0.0771 (base)  
+      union             33 logreg_l1       0.8947   0.6316  0.895  0.895   0.9583 +0.0636 (+0.0000)
+      relief_pruned     21 logreg_l1       0.8947   0.6447  0.895  0.895   0.9718 +0.0771 (+0.0000)
+
+  VERDICT [CFTR]: keep the CURRENT selection (null). No method beat it on held-out F1.
+
+========================================================================
+  OVERALL — held-out test F1 by panel and method
+========================================================================
+method   null  relief_pruned  union
+panel                              
+CFTR   0.8947         0.8947 0.8947
+GENEL  0.8926         0.8948 0.8926
+KANSER 0.8909         0.9107 0.8785
+PAH    0.9104         0.9147 0.9008
+
+  Recommended selection per panel: {'GENEL': 'null', 'KANSER': 'relief_pruned', 'PAH': 'null', 'CFTR': 'null'}
+  (a method is only recommended over 'null' when it wins by > 0.005 held-out F1 — otherwise keep the simpler current method)
+
+[written] /home/huseyink/Desktop/TEKNOFEST/outputs/holdout_compare/holdout_compare_summary.csv
+[written] /home/huseyink/Desktop/TEKNOFEST/outputs/holdout_compare/recommended_selection.json
+
+[step 7 done in 5m 17s]
+
+============================================================
+  PIPELINE COMPLETE — total time: 321m 2s
+  Results in: /home/huseyink/Desktop/TEKNOFEST/outputs
+============================================================
+
+[1] CROSS-VALIDATED (OOF) — champion per panel (model selection; mildly optimistic):
+
+ panel strategy    model  threshold   oof_f1   f1_std      auc  auc_std  trivial_f1     lift runner_up  runner_up_f1  runner_up_auc
+ GENEL   single catboost      0.380 0.899375 0.005148 0.868886 0.008001    0.846063 0.053312      mean      0.902020       0.872418
+KANSER   single  xgboost      0.635 0.934823 0.010521 0.948197 0.011953    0.817073 0.117750    single      0.932110       0.946144
+   PAH   single lightgbm      0.780 0.932476 0.010966 0.897919 0.021726    0.909091 0.023385      mean      0.933977       0.895525
+  CFTR   single lightgbm      0.645 0.978022 0.010522 0.974074 0.014651    0.895522 0.082500    single      0.967033       0.971958
+
+[2] HELD-OUT TEST (nested CV) — honest generalization estimate (trust this number):
+
+ panel  nested_f1_mean  nested_f1_std  nested_auc_mean  nested_balanced_f1_mean  pooled_oof_f1  optimism_gap                                          strategies
+ GENEL        0.894305       0.007604         0.851133                 0.778441       0.899375      0.005070      single:catboost;single:lightgbm;single:xgboost
+KANSER        0.915257       0.030187         0.922642                 0.855672       0.934823      0.019566      single:catboost;single:lightgbm;single:xgboost
+   PAH        0.907750       0.017755         0.792745                 0.714899       0.932476      0.024726 mean;single:catboost;single:lightgbm;single:xgboost
+  CFTR        0.919642       0.035769         0.879444                 0.778570       0.978022      0.058380      single:catboost;single:lightgbm;single:xgboost
+
+  optimism_gap = OOF F1 - honest F1.  Larger gap = more overfitting (expected worst on the small panels).
+
