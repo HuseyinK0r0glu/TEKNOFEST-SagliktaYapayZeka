@@ -26,3 +26,8 @@ old_terminal_output.txt
 data-vis
 data-vis.zip
 outputs_colab
+# Koşu günlükleri ve koşu çıktıları (run_final.py / run_improved.py)
+logs/
+outputs_final/
+outputs_improved/
+outputs_best/
