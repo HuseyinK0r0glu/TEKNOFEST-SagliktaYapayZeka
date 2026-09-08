@@ -1,4 +1,12 @@
-"""Generate run_final.py from the final Colab notebook's code cells."""
+"""HISTORICAL / SUPERSEDED — do not run.
+
+This originally generated a flat `run_final.py` from the Colab notebook's
+code cells. That flat file has since been hand-split into the
+`search.reference` package (see `search/reference/*.py`), which is now the
+maintained copy — running this script would recreate a stale flat file that
+no longer matches the current package layout. Kept only so the notebook
+cell numbers this once extracted stay documented.
+"""
 from __future__ import annotations
 import json
 from pathlib import Path
@@ -24,7 +32,7 @@ Run (full report-grade budget, all four panels):
     TEKNOFEST_OUT_DIR=outputs_final \\
     .venv/bin/python run_final.py 2>&1 | tee run_final.log
 
-Her koşu logs/run_final_<zaman>.txt dosyasına da yazılır (logs/run_final_latest.txt).
+Every run also writes to logs/run_final_<timestamp>.txt (logs/run_final_latest.txt).
 
 Single panel:  .venv/bin/python run_final.py CFTR
 Regenerate:    python scripts/gen_runner.py   (see repo notes)
@@ -69,7 +77,7 @@ def _inference_check(panels) -> None:
 def main() -> None:
     import runlog
     log_path = runlog.start("run_final",
-                            note="Referans (baseline) pipeline — PDR'deki koşunun aynısı")
+                            note="Reference (baseline) pipeline — the exact run behind the submitted PDR")
 
     panels = [a.upper() for a in sys.argv[1:]] or PANELS
     unknown = [p for p in panels if p not in PANEL_FILES]

@@ -2,9 +2,8 @@ import json, os, sys
 import numpy as np, pandas as pd
 os.environ.setdefault("TEKNOFEST_OUT_DIR", "/tmp/x_unused_out")
 sys.path.insert(0, ".")
-import importlib.util
-spec = importlib.util.spec_from_file_location("rf", "run_final.py")
-rf = importlib.util.module_from_spec(spec); spec.loader.exec_module(rf)
+from pathugen.data_io import load_panel
+from pathugen.features import build_features
 
 repro = json.load(open("report_figs/repro_metrics.json"))
 KEYS = ["n_missing_total","pct_missing","ek_mean","ek_max","ek_count","al_log_max",
@@ -14,8 +13,8 @@ KEYS = ["n_missing_total","pct_missing","ek_mean","ek_max","ek_count","al_log_ma
 for p in ["GENEL","KANSER","PAH","CFTR"]:
     d = np.load(f"report_figs/oof_{p}.npz", allow_pickle=True)
     oof, y, thr = d["oof"], d["y"], float(d["thr"])
-    df = rf.load_panel(p)
-    X, yy, _ = rf.build_features(df)
+    df = load_panel(p)
+    X, yy, _ = build_features(df)
     assert len(X) == len(y), (len(X), len(y))
     print(f"\n{'='*72}\n{p}  n={len(y)} thr={thr:.3f} kind={d['kind']}  label-match={bool((np.asarray(yy)==y).all())}")
     pred = (oof >= thr).astype(int)

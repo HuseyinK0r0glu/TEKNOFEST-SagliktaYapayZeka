@@ -4,8 +4,8 @@ Team: {{TEAM_NAME}} (team_id {{TEAM_ID}}, application_id {{APPLICATION_ID}})
 Generated: {{GENERATED_AT}}
 
 This folder is a complete, self-contained delivery package produced by
-`PatHUgen.py deliver`, matching Section 6 ("Model Dosyalarının USB ile
-Teslimi ve Yeniden Üretilebilirlik") of
+`PatHUgen.py deliver`, matching Section 6 ("Delivering Model Files via USB
+and Reproducibility") of
 `TEKNOFEST_2026_Saglikta_Yapay_Zeka_Final_Uygulama_ve_Sonuc_Teslim_Kilavuzu.pdf`.
 
 ## Run command
@@ -52,8 +52,8 @@ run's output is preserved instead of overwritten.
    ```
    pip install -r requirements.txt
    ```
-2. Re-train the locked model configuration (needs the official training
-   CSVs, not included here — see `code/` for `PatHUgen.py`):
+2. Re-train the champion configuration (recorded in `code/champion_config.json`,
+   not a hardcoded literal — needs the official training CSVs, not included here):
    ```
    python code/PatHUgen.py train
    ```
@@ -70,8 +70,13 @@ delivery{{DELIVERY_NUMBER}}/
   README.md                          <- this file
   requirements.txt                   <- exact pinned dependency versions
   {{OUTPUT_JSON_NAME}}      <- result JSON — upload this
-  code/                              <- PatHUgen.py + its delivery README template
-                                        (everything this script needs to run — nothing else)
+  code/                              <- PatHUgen.py + pathugen/ (what train/deliver need)
+                                        + champion_config.json (the fitted recipe, not a
+                                        hardcoded literal) + this README's template.
+                                        May also include search/ — the from-scratch search
+                                        pipeline behind `python PatHUgen.py run` — since
+                                        PatHUgen.py can invoke it too; only pathugen/ is
+                                        actually needed to reproduce this delivery's result.
   model/                             <- trained model weights + configuration
                                         (one subfolder per panel; exact snapshot used
                                         for this delivery — see "Input" above)

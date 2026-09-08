@@ -12,33 +12,37 @@ cd ~/Desktop/TEKNOFEST
 .venv/bin/pip install -r requirements.txt      # if not already installed
 ```
 
-Confirm the competition identity fields match your KYS (başvuru sistemi)
+Confirm the competition identity fields match your KYS (application system)
 registration — these are filled with this project's existing values as
 defaults, but **verify them**:
 
 ```bash
-grep -A3 "Competition identity" PatHUgen.py
+grep -A3 "Competition identity" pathugen/config.py
 ```
 
-If anything is wrong, either edit the defaults in `PatHUgen.py` directly, or
-override at run time with environment variables (shown below) — no code
-change needed for the override.
+If anything is wrong, either edit the defaults in `pathugen/config.py`
+directly, or override at run time with environment variables (shown below)
+— no code change needed for the override.
 
 ---
 
 ## 1. Train (run once, ahead of the competition)
 
-This fits the locked configuration (see `PatHUgen_Explanation.md` §5) on the
-official training CSVs and writes the model bundle to `pathugen_model/`.
+This fits the champion configuration (see `Champion_Config.md` and
+`PatHUgen_Explanation.md` §5) — read from `champion_config.json`, not a
+literal in the code — on the official training CSVs, and writes the model
+bundle to `pathugen_model/`.
 
 ```bash
 .venv/bin/python PatHUgen.py train
 ```
 
 Takes under a minute (no hyperparameter search happens here — those
-decisions are already locked in; `train` fits the one already-chosen
-configuration, it doesn't search for it). Train a single panel while
-iterating:
+decisions were already found and recorded in `champion_config.json`; `train`
+fits that already-chosen configuration, it doesn't search for it — if
+`champion_config.json` is missing, `train` fails with a clear message
+telling you to run `search` first or copy one in). Train a single panel
+while iterating:
 
 ```bash
 .venv/bin/python PatHUgen.py train CFTR
@@ -55,7 +59,7 @@ TEKNOFEST_DATA_DIR=/path/to/training/csvs .venv/bin/python PatHUgen.py train
 writes a new numbered snapshot — `pathugen_model/<PANEL>/v1/`, then `v2/`,
 `v3/`, ... — the same way `deliver` never overwrites a previous
 `deliveryN/` folder. `deliver` always uses each panel's most recently
-trained snapshot unless you tell it otherwise (see §3 below). See what
+trained snapshot unless you tell it otherwise (see §4 below). See what
 you've trained so far:
 
 ```bash
@@ -74,7 +78,57 @@ Model dir: /home/.../pathugen_model
 
 ---
 
-## 2. When a test CSV arrives — competition day
+## 2. Redoing the search (advanced, rare — not a competition-day command)
+
+`train` fits the hyperparameters, feature set, and threshold that were
+already found and recorded in `champion_config.json`. If you get new or
+materially different training data and want to re-derive those decisions
+from scratch — the same multi-hour search, cross-validation, and
+overfitting audit that produced the current `champion_config.json` in the
+first place — that's what `run` does:
+
+```bash
+.venv/bin/python PatHUgen.py run
+```
+
+**This is not the same kind of command as `train`/`deliver`.** Those two are
+fully self-contained — verified to work with nothing but `PatHUgen.py` and
+`pathugen/` present. `run` is the opposite: it delegates to this project's
+search pipeline (the `search/` package), so it only works when that sits
+alongside the rest of the project, and it takes hours, not seconds — it
+sweeps many combinations of feature set, model, and decision threshold per
+panel, from scratch, with no cached or inherited hyperparameters, and keeps
+only the ones that survive an overfitting audit. Never run this during the
+actual timed competition test.
+
+Search a single panel instead of all four:
+
+```bash
+.venv/bin/python PatHUgen.py run CFTR
+```
+
+**`run` never edits `champion_config.json` for you.** It writes its findings
+to `outputs_best/best_config.json`, `outputs_best/champion_config.json` (if
+every searched panel's champion is a single XGBoost model), and a
+human-readable `outputs_best/BEST_CONFIG.md` explaining the reasoning per
+panel. To actually adopt a new result, open `BEST_CONFIG.md`, then copy
+`outputs_best/champion_config.json` over this project's own
+`champion_config.json`, then run `python PatHUgen.py train` to fit it. This
+is a deliberate, reviewed step — not automatic — so the champion
+configuration always reflects a decision someone actually looked at. See
+`Champion_Config.md` for the full workflow.
+
+`run` accepts the sweep's environment-variable knobs (`SWEEP_PROFILE`,
+`SELECT_OBJECTIVE`, `GAP_LIMIT`, `STABILITY_MIN`, ...) — see `RUNNERS.md`
+for the full list. For example, a faster (but less thorough) search:
+
+```bash
+SWEEP_PROFILE=fast .venv/bin/python PatHUgen.py run
+```
+
+---
+
+## 3. When a test CSV arrives — competition day
 
 This is the command you run **every time** you have test data to score,
 including the organizers' practice/sample-data check and the real timed
@@ -107,7 +161,7 @@ recorded in the delivery README for the audit trail.)
 ### What happens
 
 1. Predicts on all four panels using each panel's most recently trained
-   snapshot in `pathugen_model/` (see §3 to pin an older one instead).
+   snapshot in `pathugen_model/` (see §4 to pin an older one instead).
 2. Validates the result locally against the official JSON schema (unique
    ids per panel, valid `"0"`/`"1"` classes, probabilities in range, no
    NaN/Infinity) — **before** anything is written or uploaded. If validation
@@ -153,7 +207,7 @@ that is the one that produces a complete, jury-reproducible package.
 
 ---
 
-## 3. Using an older trained snapshot
+## 4. Using an older trained snapshot
 
 `deliver` always uses each panel's most recently trained snapshot by
 default. If you retrained and want to go back to an earlier one for a
@@ -171,7 +225,7 @@ you've trained many more snapshots since.
 
 ---
 
-## 4. If the true test class balance looks different from training
+## 5. If the true test class balance looks different from training
 
 Training-set positive rates are GENEL 73%, KANSER 69%, PAH 83%, CFTR 81%.
 Each panel's threshold was chosen with this in mind (see
@@ -190,7 +244,7 @@ describes (AUROC-style, rank-based).
 
 ---
 
-## 5. Overriding competition identity fields
+## 6. Overriding competition identity fields
 
 If team_name / team_id / application_id ever need to change without editing
 `PatHUgen.py`:
@@ -202,14 +256,15 @@ TEAM_NAME="PatHUgen" TEAM_ID="761197" APPLICATION_ID="4882800" \
 
 ---
 
-## 6. Troubleshooting
+## 7. Troubleshooting
 
 | Symptom | Likely cause / fix |
 |---|---|
 | `No trained model found for <PANEL>` | Run `python PatHUgen.py train` first. |
 | `no such trained version vN under ...` | That snapshot number doesn't exist for that panel — run `python PatHUgen.py versions` to see what's actually available. |
+| ``run` needs the full project, not just PatHUgen.py` | You tried `run` from a copy that only has `PatHUgen.py` (e.g. inside a `deliveryN/code/` folder) — that's expected, `run` is not self-contained. Use the full project checkout instead, and never during a real submission. |
 | `Could not auto-detect a test file for panel(s) [...]` | Filenames don't contain a recognizable panel keyword — pass `--genel/--kanser/--pah/--cftr` explicitly. |
-| `expected N columns, got M` | The test CSV's column count doesn't match the trained schema (351 or 352 columns) — confirm you were given the right file for that panel. |
+| `expected N columns, got M` | The test CSV's column count doesn't match the trained schema (352 columns without Label, 353 with) — confirm you were given the right file for that panel. |
 | `duplicate <ID> values in the input file` | The guide requires exactly one prediction per id; the input file itself has repeated ids — check with the organizers before proceeding. |
 | Validation fails after `deliver` prints per-panel counts | Nothing was written; read the printed list of problems — each line names the exact record and field at fault. |
 
@@ -220,7 +275,7 @@ for debugging.
 
 ---
 
-## 7. Full command reference
+## 8. Full command reference
 
 ```bash
 python PatHUgen.py train [PANEL ...]            # default: all four panels
@@ -230,6 +285,14 @@ python PatHUgen.py train [PANEL ...]            # default: all four panels
 python PatHUgen.py versions
     [--model-dir DIR]                           # default: pathugen_model/
     # lists every trained snapshot per panel, marks which one is "latest"
+
+python PatHUgen.py run [PANEL ...]              # default: all four panels
+    # multi-hour search + overfitting audit; requires the full project
+    # (the `search/` package), NOT a competition-day command. Every
+    # training configuration is tuned from scratch — no cache, no
+    # inheritance. Writes to outputs_best/, never edits champion_config.json
+    # automatically. Respects the sweep's env vars (SWEEP_PROFILE,
+    # SELECT_OBJECTIVE, GAP_LIMIT, ... — see RUNNERS.md).
 
 python PatHUgen.py deliver --input-dir DIR
     [--genel PATH --kanser PATH --pah PATH --cftr PATH]   # override auto-detection

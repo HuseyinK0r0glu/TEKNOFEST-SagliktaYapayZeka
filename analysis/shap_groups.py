@@ -1,11 +1,12 @@
-import os, json, importlib.util, warnings, re
+import os, json, warnings, re
 warnings.filterwarnings("ignore")
 SCR="/tmp/claude-1000/-home-huseyink-Desktop-TEKNOFEST/c398d6bd-6ea3-4e42-b66e-e6eb8b13a05d/scratchpad"
 BUNDLE=f"{SCR}/colab_full/outputs_colab/models"
 os.environ["TEKNOFEST_OUT_DIR"]=f"{SCR}/colab_full/outputs_colab"
-spec = importlib.util.spec_from_file_location("rf", "run_final.py")
-rf = importlib.util.module_from_spec(spec); spec.loader.exec_module(rf)
 import numpy as np, pandas as pd, joblib, shap
+from pathugen.config import ID_COL
+from pathugen.data_io import load_panel
+from pathugen.features import build_features, get_cat_maps
 
 def group_of(f):
     if re.fullmatch(r"AL_([1-9]|1\d|2[0-6])", f): return "Popülasyon frekansı (AL ham)"
@@ -24,8 +25,8 @@ def group_of(f):
 for p in ["GENEL","KANSER","PAH","CFTR"]:
     ch=json.loads(open(f"{BUNDLE}/{p}/champion.json").read())
     sel=json.loads(open(f"{BUNDLE}/{p}/selected_features.json").read())
-    df=rf.load_panel(p); cm=rf.get_cat_maps(df)
-    X,y,_=rf.build_features(df, cat_maps=cm); X=X[sel]
+    df=load_panel(p); cm=get_cat_maps(df)
+    X,y,_=build_features(df, cat_maps=cm); X=X[sel]
     model=joblib.load(f"{BUNDLE}/{p}/base_{ch['model']}.joblib")
     ex=shap.TreeExplainer(model)
     sv=ex.shap_values(X)
@@ -44,5 +45,5 @@ for p in ["GENEL","KANSER","PAH","CFTR"]:
         proba=model.predict_proba(X)[:,1]; yy=np.asarray(y)
         i=int(np.argmax(np.where(yy==1, proba, -1)))
         row=pd.Series(sv[i],index=sel).sort_values(key=np.abs,ascending=False).head(6)
-        print(f"  [ÖRNEK] Variant_ID={df[rf.ID_COL].iloc[i]} y={yy[i]} p={proba[i]:.3f}")
+        print(f"  [ÖRNEK] Variant_ID={df[ID_COL].iloc[i]} y={yy[i]} p={proba[i]:.3f}")
         for f,v in row.items(): print(f"      {f:28s} SHAP={v:+.3f}  değer={X[f].iloc[i]}")

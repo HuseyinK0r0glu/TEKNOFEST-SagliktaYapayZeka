@@ -1,18 +1,18 @@
-# -*- coding: utf-8 -*-
-"""Koşu günlüğü — stdout/stderr'i aynı anda ekrana ve zaman damgalı bir .txt
-dosyasına yazar.
+"""Run logging — tees stdout/stderr to both the screen and a timestamped
+.txt file at the same time.
 
-Kullanım (betiğin main() fonksiyonunun ilk satırlarında):
+Usage (at the top of a runner's main() function):
 
-    import runlog
-    runlog.start("run_final")
+    from search import runlog
+    runlog.start("reference")
 
-Üretilen dosyalar:
-    logs/run_final_YYYYMMDD-HHMMSS.txt   → bu koşunun tam günlüğü
-    logs/run_final_latest.txt            → son koşuya sembolik bağ
+Files produced:
+    logs/reference_YYYYMMDD-HHMMSS.txt   -> the full log for this run
+    logs/reference_latest.txt            -> symlink to the most recent run
 
-Günlük klasörü TEKNOFEST_LOG_DIR ortam değişkeniyle değiştirilebilir.
-Betik çökerse traceback de günlüğe yazılır ve altbilgide HATA olarak işaretlenir.
+The log directory can be overridden with the TEKNOFEST_LOG_DIR environment
+variable. If the script crashes, the traceback is written to the log too and
+the footer is marked as an ERROR.
 """
 from __future__ import annotations
 
@@ -25,18 +25,20 @@ import traceback
 from datetime import datetime
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent
+from search._project_root import PROJECT_ROOT
+
+ROOT = PROJECT_ROOT
 LOG_DIR = Path(os.environ.get("TEKNOFEST_LOG_DIR", str(ROOT / "logs")))
 
-# Günlük başlığında gösterilecek ortam değişkenleri.
+# Environment variables shown in the log header.
 KNOBS = [
     "TEKNOFEST_DATA_DIR", "TEKNOFEST_OUT_DIR", "QUICK", "USE_GPU", "RUN_NESTED",
     "OPTUNA_TRIALS", "OPTUNA_TIMEOUT", "OPTUNA_OBJECTIVE", "CV_REPEATS",
     "NESTED_REPEATS", "NESTED_SPLITS", "SELECT_METRIC", "SELECTION_METHOD",
     "AUGMENT_PANELS", "SPW_MULT_HI",
-    # run_improved.py'ye özgü knob'lar
+    # search.improved-specific knobs
     "THRESHOLD_POLICY", "REPORT_PRIORS", "PAIRED_BOOTSTRAP", "DIVERSE_STACK",
-    "SHORTCUT_AUDIT", "SEED_ENSEMBLE", "AUG_FRAC", "REUSE_PARAMS", "COMPARE_TO",
+    "SHORTCUT_AUDIT", "SEED_ENSEMBLE", "AUG_FRAC", "COMPARE_TO",
 ]
 _LIBS = ["numpy", "pandas", "sklearn", "xgboost", "lightgbm", "catboost", "optuna",
          "shap", "joblib"]
@@ -47,7 +49,8 @@ _SEP = "-" * 78
 
 
 class _Tee:
-    """Bir akışı hem asıl hedefe hem günlük dosyasına yazar (satır satır flush)."""
+    """Writes a stream to both its original target and the log file
+    (flushing line by line)."""
 
     def __init__(self, stream, handle):
         self._stream = stream
@@ -88,7 +91,7 @@ def _git_info():
     branch = _run(["git", "rev-parse", "--abbrev-ref", "HEAD"]) or "?"
     dirty = _run(["git", "status", "--porcelain"])
     n = len([l for l in dirty.splitlines() if l.strip()])
-    return f"{sha} ({branch}) — {'temiz' if n == 0 else f'{n} değişiklik/izlenmeyen dosya'}"
+    return f"{sha} ({branch}) — {'clean' if n == 0 else f'{n} changed/untracked file(s)'}"
 
 
 def _hardware():
@@ -98,8 +101,8 @@ def _hardware():
         ram_s = f"{ram:.1f} GB"
     except (ValueError, OSError, AttributeError):
         ram_s = "?"
-    gpu = _run(["nvidia-smi", "--query-gpu=name", "--format=csv,noheader"]) or "yok"
-    return f"{cores} mantıksal çekirdek / {ram_s} RAM", gpu.replace("\n", ", ")
+    gpu = _run(["nvidia-smi", "--query-gpu=name", "--format=csv,noheader"]) or "none"
+    return f"{cores} logical core(s) / {ram_s} RAM", gpu.replace("\n", ", ")
 
 
 def _libs():
@@ -109,7 +112,7 @@ def _libs():
         try:
             parts.append(f"{m} {getattr(importlib.import_module(m), '__version__', '?')}")
         except Exception:
-            parts.append(f"{m} (yok)")
+            parts.append(f"{m} (not installed)")
     return ", ".join(parts)
 
 
@@ -117,8 +120,8 @@ def _fmt_duration(seconds):
     s = int(seconds)
     h, s = divmod(s, 3600)
     m, s = divmod(s, 60)
-    return (f"{h} sa {m} dk {s} sn" if h else
-            f"{m} dk {s} sn" if m else f"{s} sn")
+    return (f"{h}h {m}m {s}s" if h else
+            f"{m}m {s}s" if m else f"{s}s")
 
 
 def _footer():
@@ -126,12 +129,12 @@ def _footer():
     if handle is None or handle.closed:
         return
     start = _state["start"]
-    status = _state.get("status", "BAŞARILI")
+    status = _state.get("status", "SUCCESS")
     print("\n" + _BAR)
-    print(f" Bitiş      : {datetime.now():%Y-%m-%d %H:%M:%S}")
-    print(f" Süre       : {_fmt_duration(datetime.now().timestamp() - start.timestamp())}")
-    print(f" Durum      : {status}")
-    print(f" Günlük     : {_state['path']}")
+    print(f" Finished   : {datetime.now():%Y-%m-%d %H:%M:%S}")
+    print(f" Duration   : {_fmt_duration(datetime.now().timestamp() - start.timestamp())}")
+    print(f" Status     : {status}")
+    print(f" Log        : {_state['path']}")
     print(_BAR)
     sys.stdout = _state["orig_out"]
     sys.stderr = _state["orig_err"]
@@ -139,7 +142,7 @@ def _footer():
 
 
 def _excepthook(exc_type, exc, tb):
-    _state["status"] = f"HATA — {exc_type.__name__}: {exc}"
+    _state["status"] = f"ERROR — {exc_type.__name__}: {exc}"
     handle = _state.get("handle")
     if handle is not None and not handle.closed:
         handle.write("\n" + _SEP + "\n TRACEBACK\n" + _SEP + "\n")
@@ -149,7 +152,7 @@ def _excepthook(exc_type, exc, tb):
 
 
 def start(name: str, note: str | None = None) -> Path:
-    """Günlüğü başlatır ve dosya yolunu döndürür. İki kez çağrılırsa yok sayılır."""
+    """Starts the log and returns its file path. A second call is a no-op."""
     if _state.get("handle") is not None:
         return _state["path"]
 
@@ -167,32 +170,32 @@ def start(name: str, note: str | None = None) -> Path:
 
     hw, gpu = _hardware()
     print(_BAR)
-    print(" TEKNOFEST 2026 — Varyant Patojenite Sınıflandırıcısı · koşu günlüğü")
+    print(" TEKNOFEST 2026 — Variant Pathogenicity Classifier · run log")
     print(_SEP)
-    print(f" Betik      : {name}.py")
-    print(f" Komut      : {' '.join([Path(sys.argv[0]).name] + sys.argv[1:])}")
-    print(f" Başlangıç  : {stamp:%Y-%m-%d %H:%M:%S}")
-    print(f" Günlük     : {path}")
+    print(f" Script     : {name}")
+    print(f" Command    : {' '.join([Path(sys.argv[0]).name] + sys.argv[1:])}")
+    print(f" Started    : {stamp:%Y-%m-%d %H:%M:%S}")
+    print(f" Log        : {path}")
     if note:
-        print(f" Not        : {note}")
+        print(f" Note       : {note}")
     print(_SEP)
     print(f" Python     : {platform.python_version()} ({platform.python_implementation()})"
           f" — {platform.system()} {platform.release()}")
-    print(f" Donanım    : {hw}")
+    print(f" Hardware   : {hw}")
     print(f" GPU        : {gpu}")
     print(f" Git        : {_git_info()}")
-    print(f" Kütüphane  : {_libs()}")
+    print(f" Libraries  : {_libs()}")
     print(_SEP)
-    print(" Ortam değişkenleri:")
+    print(" Environment variables:")
     shown = [(k, os.environ[k]) for k in KNOBS if k in os.environ]
     if shown:
         for i in range(0, len(shown), 3):
             print("   " + "   ".join(f"{k}={v}" for k, v in shown[i:i + 3]))
     else:
-        print("   (varsayılanlar)")
+        print("   (defaults)")
     print(_BAR, flush=True)
 
-    # "latest" kısayolu
+    # "latest" shortcut
     latest = LOG_DIR / f"{name}_latest.txt"
     try:
         if latest.is_symlink() or latest.exists():
@@ -204,7 +207,7 @@ def start(name: str, note: str | None = None) -> Path:
 
 
 def section(title: str) -> None:
-    """Günlükte görsel olarak ayrılmış bir başlık basar."""
+    """Prints a visually separated header in the log."""
     print("\n" + _BAR)
     print(f"  {title}")
     print(_BAR, flush=True)

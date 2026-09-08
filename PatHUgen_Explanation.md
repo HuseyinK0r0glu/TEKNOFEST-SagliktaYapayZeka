@@ -51,7 +51,7 @@ a specific gap the previous one exposed. **`PatHUgen.py` is the only one
 meant to run during the actual competition** — the other three exist so that
 `PatHUgen.py`'s hard-coded configuration has a fully audited paper trail.
 
-### 2.1 `run_final.py` — the reference pipeline
+### 2.1 `search.reference` — the reference pipeline
 
 The baseline, unmodified pipeline (originally developed and validated on
 Google Colab, later ported to run locally). For each panel, independently:
@@ -82,10 +82,10 @@ Google Colab, later ported to run locally). For each panel, independently:
 This is the pipeline that produced the numbers in the submitted PDR
 (Proje Detay Raporu), scored 96.5.
 
-### 2.2 `run_improved.py` — testing specific hypotheses
+### 2.2 `search.improved` — testing specific hypotheses
 
 Built to test four concrete improvement ideas against the reference, without
-touching `run_final.py`'s code (it imports it as a library):
+touching `search.reference`'s code (it imports it as a library):
 
 1. **Prior-aware decision thresholds** — instead of only maximizing F1 at
    the training class balance, compute the threshold under four policies
@@ -111,13 +111,13 @@ but which candidate "won" changed on almost every cross-validation fold
 (4 different winners across 10 folds). The averaged ensemble's optimism gap
 (OOF score minus honest nested score) more than tripled versus the
 reference. This was a real, measured overfitting failure, not a hypothetical
-one — and it is exactly the failure `run_best_search.py` was built to catch
+one — and it is exactly the failure `search.sweep` was built to catch
 systematically instead of by hand.
 
-### 2.3 `run_best_search.py` — sweep everything, audit everything
+### 2.3 `search.sweep` — sweep everything, audit everything
 
-Rather than trying one configuration at a time, this script is the
-cross-product of every option `run_final.py` and `run_improved.py` each
+Rather than trying one configuration at a time, this package is the
+cross-product of every option `search.reference` and `search.improved` each
 fixed to a single choice:
 
 - **Expensive axis** (needs retraining): feature-selection method
@@ -137,42 +137,63 @@ failed was discarded outright:
 1. **Optimism gap** (OOF F1 − honest nested F1) must be ≤ 0.040.
 2. **Champion stability** — the same model must win in at least half of the
    outer folds. *(This is precisely the check that would have caught the
-   PAH failure in `run_improved.py` before it shipped.)*
+   PAH failure in `search.improved` before it shipped.)*
 3. **Beats the naive baseline** (always-predict-pathogenic).
 
 The surviving configurations were ranked by a **robustness objective**
 (`min(honest F1, honest balanced-F1)` — a hedge against not knowing the true
 test-set class balance), and the winner per panel was written to
-`outputs_best/best_config.json` with a full human-readable justification in
-`outputs_best/BEST_CONFIG.md`.
+`outputs_best/best_config.json` (plus `outputs_best/champion_config.json`
+when the winner is a single XGBoost model) with a full human-readable
+justification in `outputs_best/BEST_CONFIG.md`.
+
+Every training configuration in the sweep gets its own from-scratch Optuna
+search — there is no cache and nothing is inherited between configurations
+or between runs. (An earlier version of this sweep had a `REUSE_PARAMS`
+flag and a cross-run parameter cache; both were removed after an audit
+found they made a from-scratch `python PatHUgen.py run` silently run zero
+real Optuna trials whenever cache files already existed on disk.)
 
 **Result: every panel's audited champion is a single tuned XGBoost model.**
 No stacking, no averaging survived the audit anywhere — a genuinely
 cross-validated argument for simplicity, not an assumption.
 
-### 2.4 `PatHUgen.py` — the locked, final delivery script
+### 2.4 `PatHUgen.py` + `pathugen/` — the locked, final delivery system
 
-This file takes the answer `run_best_search.py` found and **hard-codes it**.
-There is no Optuna, no sweeping, no nested cross-validation here — those
-decisions are closed. What remains is exactly what a competition submission
-needs: a `train` command (fit the locked configuration from the training
-CSVs) and a `deliver` command (score new test data, validate the result
-against the official JSON schema, and package a complete, reproducible
-delivery folder). See `HOW_TO_RUN.md` for the operational guide.
+`PatHUgen.py` is a thin entry point; the implementation is the `pathugen/`
+package next to it. `train` and `deliver` never search anything — those
+decisions are closed and recorded in `champion_config.json` (data, not a
+Python literal — see `Champion_Config.md`). `train` fits that configuration
+from the training CSVs; `deliver` scores new test data, validates the
+result against the official JSON schema, and packages a complete,
+reproducible delivery folder. Both are fully self-contained: they need
+nothing from this project except `PatHUgen.py`, `pathugen/`,
+`champion_config.json`, and `Delivery_Readme.md` (verified by running them
+from a copy containing only those files).
+
+`PatHUgen.py` also exposes a third command, `run`, as a convenience entry
+point into the sweep (`search.sweep`) — useful if the training data changes
+materially and `champion_config.json` needs to be re-derived. Unlike
+`train`/`deliver`, `run` is **not** self-contained: it imports the `search/`
+package directly, takes hours, and is never meant to run during the
+competition itself. It also never edits `champion_config.json`
+automatically — adopting a new result is a deliberate, reviewed copy of a
+file, the same way the current configuration was adopted. See
+`HOW_TO_RUN.md` for the operational guide.
 
 ---
 
 ## 3. Why this order of scripts, not fewer
 
 It would have been possible to skip straight to sweeping everything
-(`run_best_search.py`) from the start. The staged approach mattered in
-practice: `run_final.py` established a trustworthy baseline and the honest
-nested-CV methodology; `run_improved.py` tested specific, reasoned
+(`search.sweep`) from the start. The staged approach mattered in practice:
+`search.reference` established a trustworthy baseline and the honest
+nested-CV methodology; `search.improved` tested specific, reasoned
 hypotheses cheaply and **surfaced a real overfitting failure on PAH** that
-would otherwise have gone unnoticed; `run_best_search.py` then generalized
-the fix (an explicit, automated overfitting audit) instead of patching PAH
-by hand. `PatHUgen.py` is deliberately the simplest file in the project,
-because every decision it encodes was already earned by the three before it.
+would otherwise have gone unnoticed; `search.sweep` then generalized the fix
+(an explicit, automated overfitting audit) instead of patching PAH by hand.
+`pathugen/` is deliberately the simplest part of the project, because every
+decision it encodes was already earned by the three search packages before it.
 
 ---
 
@@ -254,8 +275,8 @@ identically at inference time — if a code meant something different at
 predict time than it meant during training, the model's learned splits
 would silently misinterpret the input.
 
-`run_final.py` re-derives this mapping from the training CSV every time it
-predicts. **`PatHUgen.py` instead saves the mapping into the model bundle**
+`search.reference` re-derives this mapping from the training CSV every time
+it predicts. **`pathugen/train.py` instead saves the mapping into the model bundle**
 (`cat_maps.joblib`) at training time and reloads it at inference time. This
 is a deliberate change for the competition environment: the delivery guide
 requires the system to work with **no internet access**, using only files
@@ -276,12 +297,18 @@ different things:
   training rows only, then scored once on the untouched fold.
 
 The gap between them (`optimism_gap`) is the direct measure of overfitting.
-`run_best_search.py`'s audit requires this gap to stay under 0.040 **and**
+`search.sweep`'s audit requires this gap to stay under 0.040 **and**
 requires the winning model to actually win consistently across folds (not
 just once, on the full panel) **and** requires it to beat the naive
-always-pathogenic baseline. All four of `PatHUgen.py`'s locked
+always-pathogenic baseline. All four of the current `champion_config.json`
 configurations passed all three checks — see `outputs_best/BEST_CONFIG.md`
 for the full per-panel numbers and reasoning.
+
+One caveat applies to all of the honest numbers above: hyperparameters
+themselves are tuned once per training configuration, not re-tuned inside
+each outer fold, so the honest estimate carries a mild optimistic bias from
+that one step specifically (feature selection, model choice, and threshold
+ARE genuinely re-decided per fold). See `WARNING.md`.
 
 ---
 
@@ -301,29 +328,42 @@ Per `TEKNOFEST_2026_Saglikta_Yapay_Zeka_Final_Uygulama_ve_Sonuc_Teslim_Kilavuzu.
 four panels, validates the result against the schema locally (catching
 malformed output before it ever reaches the upload system), and builds a
 numbered `deliveryN/` folder containing the JSON, the exact trained model
-snapshot used, `PatHUgen.py` itself (the only code the guide's reproducibility
-requirement actually calls for — this project's search and analysis scripts
-played no part in producing the delivered result, so they are not included),
-a frozen `requirements.txt`, and a rendered README documenting exactly how
-that delivery was produced. Competition test data is never copied into a
+snapshot used, the code (discovered automatically by tracing `PatHUgen.py`'s
+own imports, not a hand-kept list — described just below), a frozen
+`requirements.txt`, and a rendered README documenting exactly how that
+delivery was produced. Competition test data is never copied into a
 delivery folder — the guide explicitly forbids this. Full operational detail
 is in `HOW_TO_RUN.md`.
+
+The code that ships is whatever `PatHUgen.py` actually imports, traced
+transitively: always `pathugen/` and `champion_config.json` (the only things
+`train`/`deliver` need), and — because `PatHUgen.py` also defines the `run`
+command, which imports the `search/` package — the `search/` package too.
+Only `pathugen/` is *needed* to reproduce the delivered result; `search/`
+rides along because the same file that can reproduce the result can also
+regenerate it from scratch, and the delivery guide's reproducibility
+requirement is easier to over-satisfy than to argue about.
 
 ---
 
 ## 9. Project file map
 
 ```
-PatHUgen.py                    <- FINAL delivery script (train + deliver)
+PatHUgen.py                    <- entry point (train / deliver / run) — thin, delegates to pathugen/
+pathugen/                      <- the self-contained delivery package (ships in every delivery)
+champion_config.json           <- the champion recipe train() fits; data, not a code literal
+Champion_Config.md             <- current values + how to adopt a new one
+WARNING.md                     <- known limitation to review before final submission
 Delivery_Readme.md             <- rendered into every delivery{N}/README.md
 pathugen_model/<PANEL>/v1,v2.. <- trained snapshots; `train` adds, never overwrites (git-ignored)
 delivery1/, delivery2/, ...    <- one per `deliver` run (git-ignored)
 
-run_final.py                   <- reference pipeline (generation 1)
-run_improved.py                <- hypothesis-testing pipeline (generation 2)
-run_best_search.py             <- full sweep + overfitting audit (generation 3)
-runlog.py                      <- shared run-logging (used by all three above)
-outputs_best/BEST_CONFIG.md    <- the audited reasoning PatHUgen.py's config comes from
+search/                        <- development-only research pipeline (NOT shipped as self-contained)
+search/reference/              <- reference pipeline (generation 1)
+search/improved/               <- hypothesis-testing pipeline (generation 2)
+search/sweep/                  <- full sweep + overfitting audit (generation 3)
+search/runlog.py               <- shared run-logging (used by all three above)
+outputs_best/BEST_CONFIG.md    <- the audited reasoning champion_config.json comes from
 
 src/, train/                   <- earlier (pre-notebook) modular pipeline version
 eda/, analysis/, report_build/ <- exploratory analysis + PSR report generation scripts

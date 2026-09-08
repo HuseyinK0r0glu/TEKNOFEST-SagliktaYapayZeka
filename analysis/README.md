@@ -2,7 +2,8 @@
 
 PSR'deki (PatHUgen_Proje_Sunus_Raporu.docx) her sayı bu betiklerden veya
 `outputs_colab.zip` / `report_figs/` içindeki koşu çıktılarından gelir.
-Hepsi proje kökünden çalıştırılır ve `run_final.py`'yi modül olarak yükler.
+Hepsi proje kökünden çalıştırılır ve `pathugen`/`search.reference` paketlerini
+modül olarak yükler.
 
 | Betik | Rapordaki karşılığı |
 |---|---|

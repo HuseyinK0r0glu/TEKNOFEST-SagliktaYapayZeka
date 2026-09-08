@@ -32,7 +32,8 @@ import pandas as pd
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
-import PatHUgen as PH  # noqa: E402
+from pathugen.config import ID_COL, LABEL_COL, PANELS  # noqa: E402
+from pathugen.data_io import load_panel  # noqa: E402
 
 OUT_DIR = ROOT / "sample_test_data"
 ANSWERS_DIR = ROOT / "sample_test_data_answers"
@@ -50,22 +51,22 @@ def main() -> None:
     ANSWERS_DIR.mkdir(exist_ok=True)
     print(f"Sampling {args.frac:.0%} of each panel (stratified by label, seed={args.seed})\n")
 
-    for panel in PH.PANELS:
-        df = PH.load_panel(panel)
+    for panel in PANELS:
+        df = load_panel(panel)
         parts = [g.sample(frac=args.frac, random_state=args.seed)
-                 for _, g in df.groupby(PH.LABEL_COL)]
+                 for _, g in df.groupby(LABEL_COL)]
         sample = pd.concat(parts, ignore_index=True)
         sample = sample.sample(frac=1.0, random_state=args.seed).reset_index(drop=True)
 
-        answers = sample[[PH.ID_COL, PH.LABEL_COL]].reset_index(drop=True)
-        test_rows = sample.drop(columns=[PH.LABEL_COL]).reset_index(drop=True)
+        answers = sample[[ID_COL, LABEL_COL]].reset_index(drop=True)
+        test_rows = sample.drop(columns=[LABEL_COL]).reset_index(drop=True)
 
         test_path = OUT_DIR / f"{panel}_sample.csv"
         answers_path = ANSWERS_DIR / f"{panel}_answers.csv"
         test_rows.to_csv(test_path, index=False)
         answers.to_csv(answers_path, index=False)
 
-        pos_rate = answers[PH.LABEL_COL].mean()
+        pos_rate = answers[LABEL_COL].mean()
         print(f"  {panel:<7s} {len(test_rows):4d} rows  "
               f"(true pathogenic rate {pos_rate:.1%})  -> {test_path.relative_to(ROOT)}")
 
