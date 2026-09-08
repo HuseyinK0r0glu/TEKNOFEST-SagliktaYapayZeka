@@ -31,3 +31,11 @@ logs/
 outputs_final/
 outputs_improved/
 outputs_best/
+
+# PatHUgen.py generated artifacts (retrainable; not checked in)
+pathugen_model/
+delivery*/
+
+# Offline test fixtures (regenerate with scripts/make_sample_test_data.py)
+sample_test_data/
+sample_test_data_answers/

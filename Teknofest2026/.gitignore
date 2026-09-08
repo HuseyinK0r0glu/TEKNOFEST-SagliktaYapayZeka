@@ -1,9 +1,0 @@
-# Sadece devasa veri setlerini engelliyoruz (Bunlar hala gitmeyecek)
-data/raw/
-data/processed/
-
-# Gereksiz Python önbellekleri ve sistem dosyaları
-__pycache__/
-*.pyc
-.ipynb_checkpoints/
-.DS_Store
