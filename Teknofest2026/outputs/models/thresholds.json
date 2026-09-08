@@ -1,0 +1,134 @@
+{
+  "primary_metric": "f1",
+  "grid": {
+    "start": 0.05,
+    "stop": 0.95,
+    "step": 0.005,
+    "n_points": 180
+  },
+  "global": {
+    "f1": {
+      "threshold": 0.22,
+      "score": 0.910238,
+      "profile": {
+        "f1": 0.9102379235760635,
+        "mcc": 0.5998359803484441,
+        "youden_j": 0.510226031139033,
+        "precision": 0.8608932833276509,
+        "recall": 0.9655831739961759
+      }
+    },
+    "mcc": {
+      "threshold": 0.25,
+      "score": 0.605149,
+      "profile": {
+        "f1": 0.9095229391336136,
+        "mcc": 0.6051490160577544,
+        "youden_j": 0.5407197487025404,
+        "precision": 0.8711484593837535,
+        "recall": 0.9514340344168261
+      }
+    },
+    "youden_j": {
+      "threshold": 0.39,
+      "score": 0.621941,
+      "profile": {
+        "f1": 0.8800954464108173,
+        "mcc": 0.5850152664047168,
+        "youden_j": 0.6219411533733954,
+        "precision": 0.9167357083678542,
+        "recall": 0.8462715105162524
+      }
+    },
+    "ensemble_mean": {
+      "threshold": 0.2867,
+      "components": {
+        "f1": 0.22,
+        "mcc": 0.25,
+        "youden_j": 0.39
+      }
+    },
+    "chosen": 0.22
+  },
+  "per_source": {
+    "master": {
+      "n": 2676,
+      "pos_rate": 0.7358,
+      "f1": {
+        "threshold": 0.22,
+        "score": 0.902841
+      },
+      "mcc": {
+        "threshold": 0.25,
+        "score": 0.587244
+      },
+      "youden_j": {
+        "threshold": 0.395,
+        "score": 0.60533
+      },
+      "chosen": 0.22,
+      "degenerate": false
+    },
+    "kanser": {
+      "n": 373,
+      "pos_rate": 0.6997,
+      "f1": {
+        "threshold": 0.265,
+        "score": 0.934823
+      },
+      "mcc": {
+        "threshold": 0.3,
+        "score": 0.773444
+      },
+      "youden_j": {
+        "threshold": 0.33,
+        "score": 0.761392
+      },
+      "chosen": 0.265,
+      "degenerate": false
+    },
+    "pah": {
+      "n": 354,
+      "pos_rate": 0.839,
+      "f1": {
+        "threshold": 0.205,
+        "score": 0.935024
+      },
+      "mcc": {
+        "threshold": 0.345,
+        "score": 0.528513
+      },
+      "youden_j": {
+        "threshold": 0.52,
+        "score": 0.543505
+      },
+      "chosen": 0.205,
+      "degenerate": false
+    },
+    "cftr": {
+      "n": 108,
+      "pos_rate": 0.8148,
+      "f1": {
+        "threshold": 0.27,
+        "score": 0.949721
+      },
+      "mcc": {
+        "threshold": 0.425,
+        "score": 0.770675
+      },
+      "youden_j": {
+        "threshold": 0.425,
+        "score": 0.859091
+      },
+      "chosen": 0.27,
+      "degenerate": false
+    }
+  },
+  "apply": {
+    "global": 0.22,
+    "master": 0.22,
+    "kanser": 0.265,
+    "pah": 0.205,
+    "cftr": 0.27
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "base_order": [
+    "XGB_tuned",
+    "LGBM_tuned",
+    "CatBoost_tuned",
+    "Skeleton_head",
+    "Dense_head"
+  ],
+  "meta_cols": [
+    "XGB_tuned",
+    "LGBM_tuned",
+    "CatBoost_tuned",
+    "Skeleton_head",
+    "Dense_head",
+    "is_master",
+    "is_kanser",
+    "is_pah",
+    "is_cftr",
+    "missingness_tier_encoded"
+  ]
+}

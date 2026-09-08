@@ -1,0 +1,31 @@
+{
+  "best_C": 0.01,
+  "nested_cv_auc": 0.8799533938814531,
+  "C_grid": [
+    0.01,
+    0.03,
+    0.1,
+    0.3,
+    1.0,
+    3.0,
+    10.0,
+    30.0,
+    100.0
+  ],
+  "n_meta_features": 10,
+  "stacked_oof_auc": 0.8799533938814531,
+  "base_order": [
+    "XGB_tuned",
+    "LGBM_tuned",
+    "CatBoost_tuned",
+    "Skeleton_head",
+    "Dense_head"
+  ],
+  "rank_average_baseline_auc": 0.8669504148456705,
+  "stacked_oof_auc_per_source": {
+    "master": 0.8703037103391105,
+    "kanser": 0.9357553366174056,
+    "pah": 0.8338354303266584,
+    "cftr": 0.9539772727272728
+  }
+}
