@@ -242,6 +242,31 @@ the classification threshold (`predicted_class`); `predicted_prob` is
 unaffected since it is not calibration-dependent for the metrics the guide
 describes (AUROC-style, rank-based).
 
+**How the move is computed.** The Bayes prior-shift formula is only valid on
+calibrated probabilities, and the raw model output deliberately is not
+calibrated (it is fit with `scale_pos_weight != 1`). So `train` also fits an
+isotonic calibrator per panel — on leak-free out-of-fold predictions, never
+in-sample — and saves it as `calibrator.joblib` in the model bundle. With
+`--prior-shift`, the audited threshold is lifted onto the calibrated scale,
+shifted there, and brought back to the raw scale; the decision itself is
+always made on the raw probability against a raw threshold, exactly as
+without the flag.
+
+Two consequences worth knowing:
+
+- **Passing the panel's own training prior changes nothing.** The shift is
+  then the exact identity and the audited threshold is returned untouched
+  (verified per panel against the un-shifted output).
+- **Snapshots trained before calibration existed still work.** They have no
+  `calibrator.joblib`; `--prior-shift` falls back to the older, approximate
+  behaviour and prints a warning naming the panel. Re-run `train` to get a
+  calibrated snapshot.
+
+The threshold move is not linear in the target prior — on some panels a
+moderate shift barely moves any row across the boundary, on others it moves
+many. Run `deliver --prior-shift ... --skip-copy` on sample data first and
+read the printed per-panel "predicted pathogenic rate" before deciding.
+
 ---
 
 ## 6. Overriding competition identity fields

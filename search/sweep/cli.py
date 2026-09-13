@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import json
-import sys
 import time
 
 import numpy as np
@@ -26,8 +25,20 @@ from search.reference.config import NESTED_REPEATS, NESTED_SPLITS, OPTUNA_TIMEOU
 def main(panels=None):
     """`panels` lets callers (e.g. PatHUgen.py's `run` command) invoke the
     sweep programmatically without going through sys.argv; the CLI entry
-    point below still works exactly as before when panels is omitted."""
-    panels = panels or [a.upper() for a in sys.argv[1:]] or PANELS
+    point below still works exactly as before when panels is omitted.
+
+    NOTE: this used to also fall back to `sys.argv[1:]` when `panels` was
+    None, so that `python search/sweep/cli.py PANEL...` worked standalone.
+    That collided with the real caller: `pathugen/cli.py`'s `run` subcommand
+    invokes this as `sweep_main(panels=None)` after argparse has already
+    consumed argv, but `sys.argv` itself still contains the outer script's
+    own args (e.g. ["run"]) — so the fallback picked up "RUN" as if it were
+    a panel name and crashed with "Unknown panel(s): ['RUN']". Nothing in
+    this repo actually invokes this module standalone (the documented entry
+    point is always `python PatHUgen.py run [PANEL...]`), so the sys.argv
+    branch is dropped rather than reconciled with it.
+    """
+    panels = panels or PANELS
     unknown = [p for p in panels if p not in PANEL_FILES]
     if unknown:
         raise SystemExit(f"Unknown panel(s): {unknown}. Choose from {PANELS}")
