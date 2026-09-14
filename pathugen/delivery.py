@@ -12,6 +12,7 @@ from pathlib import Path
 
 from pathugen.config import PANELS, ROOT, TEAM_ID, TEAM_NAME, APPLICATION_ID
 from pathugen.predict import predict_panel
+from pathugen.versioning import snapshot_label
 from pathugen.result_json import build_result_json, validate_result_json
 from pathugen.config import MODEL_DIR
 
@@ -186,7 +187,7 @@ def render_delivery_readme(template_path: Path, *, delivery_n: int, run_command:
     version_dirs = version_dirs or {}
     counts_md = "\n".join(
         f"- {p}: {counts.get(p, 0)}"
-        + (f"  (model {version_dirs[p].name})" if p in version_dirs else "")
+        + (f"  (model {snapshot_label(version_dirs[p])})" if p in version_dirs else "")
         for p in PANELS)
     try:
         lib_versions = subprocess.run(
@@ -239,7 +240,7 @@ def deliver(input_dir: Path, *, panel_files: dict[str, Path] | None = None,
         n_pos = sum(1 for r in recs if r["predicted_class"] == "1")
         print(f"  {panel:<7s} {len(recs):5d} predictions  "
               f"(predicted pathogenic rate {n_pos/len(recs):.1%})  "
-              f"[model {panel_dir.name}]")
+              f"[model {snapshot_label(panel_dir)}]")
 
     result = build_result_json(predictions_by_panel)
     problems = validate_result_json(result, counts)

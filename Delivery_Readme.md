@@ -45,23 +45,51 @@ The result JSON for this run was written to:
 Numbered per team convention (`_FINAL{{DELIVERY_NUMBER}}.json`) so every
 run's output is preserved instead of overwritten.
 
-## How to reproduce this result from scratch
+## How to run this delivery's model on test data
 
-1. Install dependencies (`requirements.txt` in this folder pins the exact
-   versions used):
+Everything needed is in this folder — the trained weights under `model/` are
+the delivered model, so no training data and no re-training are required.
+
+Run both commands from inside this folder.
+
+1. Create an isolated environment and install the pinned dependencies
+   (`requirements.txt` here is an exact `pip freeze` of the environment that
+   produced this delivery; Python {{PYTHON_VERSION}} was used):
    ```
-   pip install -r requirements.txt
+   python3 -m venv .venv
+   .venv/bin/pip install -r requirements.txt
    ```
-2. Re-train the champion configuration (recorded in `code/champion_config.json`,
-   not a hardcoded literal — needs the official training CSVs, not included here):
+   Windows: `py -m venv .venv` then `.venv\Scripts\pip install -r requirements.txt`.
+   A virtual environment is used rather than a plain `pip install` because
+   recent Linux distributions refuse to install into the system Python
+   (PEP 668). If you already have an environment with these packages, use its
+   interpreter in step 2 instead of `.venv/bin/python`.
+
+2. Score any test CSVs with the shipped weights — `--model-dir model` points
+   at this folder's model package, so nothing is re-trained:
    ```
-   python code/PatHUgen.py train
+   .venv/bin/python code/PatHUgen.py deliver --input-dir <path-to-test-csvs> --model-dir model
    ```
-   This reproduces the model files under `model/`.
-3. Re-run inference on the same test data:
-   ```
-   python code/PatHUgen.py deliver --input-dir <path-to-test-csvs>
-   ```
+   Windows: `.venv\Scripts\python code\PatHUgen.py deliver --input-dir <csvs> --model-dir model`
+
+   The test CSVs may sit anywhere, including inside this folder (e.g. a
+   `test_data/` subfolder — then pass `--input-dir test_data`). The run prints
+   the path of the result JSON it writes, under `code/delivery<N>/`. Given the
+   same input files, it reproduces the result JSON above exactly.
+
+## How to reproduce the weights themselves from scratch
+
+Optional — only needed to verify that `model/` really is what the recorded
+configuration produces. This step needs the official training CSVs, which the
+delivery guide forbids shipping here:
+
+```
+.venv/bin/python code/PatHUgen.py train
+```
+
+It refits the champion configuration recorded in `code/champion_config.json`
+(data, not a hardcoded literal) and writes a fresh numbered snapshot, leaving
+this folder's `model/` untouched.
 
 ## Contents of this folder
 
