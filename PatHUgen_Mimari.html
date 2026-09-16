@@ -1,0 +1,1357 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PatHUgen Mimarisi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Serif:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+/* ============================================================
+   Palet: projenin kendi sunum sistemi (sunum/src/make_figs.py)
+   INK #0B1F33 · NAVY #0F4C81 · STEEL #4E86B8 · TINT #D6E3F0
+   AMBER #D9820A · TEAL #0E8C7F
+   ============================================================ */
+:root {
+  color-scheme: light;
+
+  --ink:        #0B1F33;
+  --ink-soft:   #3D5265;
+  --muted:      #5B6B7C;
+  --faint:      #8496A6;
+
+  --paper:      #F7F9FB;
+  --surface:    #FFFFFF;
+  --surface-2:  #EFF4F8;
+  --rule:       #DCE5EC;
+  --rule-soft:  #E9EFF4;
+
+  --navy:       #0F4C81;
+  --steel:      #4E86B8;
+  --tint:       #D6E3F0;
+  --amber:      #B96C05;
+  --amber-bg:   #FBF1E0;
+  --teal:       #0B7266;
+  --teal-bg:    #E2F1EE;
+
+  --mono-bg:    #EAF0F6;
+  --mono-ink:   #12456F;
+
+  --shadow-card: 0 1px 2px rgba(11,31,51,.05), 0 8px 24px -14px rgba(11,31,51,.28);
+
+  --f-display: "IBM Plex Serif", Georgia, "Times New Roman", serif;
+  --f-body:    "IBM Plex Sans", "Segoe UI", Helvetica, Arial, sans-serif;
+  --f-mono:    "IBM Plex Mono", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+
+  --measure: 68ch;
+  --rail-w: 250px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --ink:        #E7EEF5;
+    --ink-soft:   #BACAD9;
+    --muted:      #94A7B8;
+    --faint:      #6D8194;
+
+    --paper:      #0A141E;
+    --surface:    #101E2B;
+    --surface-2:  #16283A;
+    --rule:       #22394F;
+    --rule-soft:  #1B3145;
+
+    --navy:       #7FB4E4;
+    --steel:      #5E9AC9;
+    --tint:       #1E3853;
+    --amber:      #E8A54A;
+    --amber-bg:   #2C2113;
+    --teal:       #52C4B2;
+    --teal-bg:    #102E2B;
+
+    --mono-bg:    #17293A;
+    --mono-ink:   #9CC7EA;
+
+    --shadow-card: 0 1px 2px rgba(0,0,0,.4), 0 10px 28px -16px rgba(0,0,0,.7);
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --ink:        #E7EEF5;
+  --ink-soft:   #BACAD9;
+  --muted:      #94A7B8;
+  --faint:      #6D8194;
+
+  --paper:      #0A141E;
+  --surface:    #101E2B;
+  --surface-2:  #16283A;
+  --rule:       #22394F;
+  --rule-soft:  #1B3145;
+
+  --navy:       #7FB4E4;
+  --steel:      #5E9AC9;
+  --tint:       #1E3853;
+  --amber:      #E8A54A;
+  --amber-bg:   #2C2113;
+  --teal:       #52C4B2;
+  --teal-bg:    #102E2B;
+
+  --mono-bg:    #17293A;
+  --mono-ink:   #9CC7EA;
+
+  --shadow-card: 0 1px 2px rgba(0,0,0,.4), 0 10px 28px -16px rgba(0,0,0,.7);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--f-body);
+  font-size: 16px;
+  line-height: 1.62;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- shell ---------- */
+.shell {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 28px 120px;
+}
+
+/* ---------- masthead ---------- */
+.masthead {
+  border-bottom: 2px solid var(--ink);
+  padding: 54px 0 26px;
+  margin-bottom: 0;
+}
+.eyebrow {
+  font-family: var(--f-mono);
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--steel);
+  margin: 0 0 18px;
+}
+.masthead h1 {
+  font-family: var(--f-display);
+  font-weight: 700;
+  font-size: clamp(2.6rem, 1.4rem + 3.6vw, 4.4rem);
+  line-height: 1.02;
+  letter-spacing: -.022em;
+  margin: 0 0 14px;
+  text-wrap: balance;
+  color: var(--ink);
+}
+.masthead .standfirst {
+  font-family: var(--f-display);
+  font-weight: 500;
+  font-size: clamp(1.05rem, .95rem + .5vw, 1.32rem);
+  line-height: 1.5;
+  color: var(--ink-soft);
+  max-width: 62ch;
+  margin: 0;
+}
+
+/* ---------- fact strip ---------- */
+.facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  border-bottom: 1px solid var(--rule);
+  margin-bottom: 44px;
+}
+.fact {
+  padding: 20px 22px 20px 0;
+  border-right: 1px solid var(--rule-soft);
+}
+.fact:last-child { border-right: 0; }
+.fact b {
+  display: block;
+  font-family: var(--f-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 1.45rem;
+  font-weight: 600;
+  letter-spacing: -.02em;
+  color: var(--navy);
+  line-height: 1.15;
+}
+.fact span {
+  display: block;
+  font-size: 12.5px;
+  color: var(--muted);
+  margin-top: 4px;
+  line-height: 1.35;
+}
+
+/* ---------- layout ---------- */
+.cols {
+  display: grid;
+  grid-template-columns: var(--rail-w) minmax(0, 1fr);
+  gap: 56px;
+  align-items: start;
+}
+@media (max-width: 940px) {
+  .cols { grid-template-columns: 1fr; gap: 0; }
+  nav.rail { position: static; margin-bottom: 40px; }
+}
+
+nav.rail {
+  position: sticky;
+  top: 24px;
+  font-size: 13.5px;
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+}
+nav.rail h2 {
+  font-family: var(--f-mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: .17em;
+  text-transform: uppercase;
+  color: var(--faint);
+  margin: 0 0 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--rule);
+}
+nav.rail h2 + h2 { margin-top: 30px; }
+nav.rail ol, nav.rail ul { list-style: none; margin: 0; padding: 0; }
+nav.rail li { margin: 0; }
+nav.rail a {
+  display: grid;
+  grid-template-columns: 26px 1fr;
+  gap: 6px;
+  padding: 5px 6px 5px 0;
+  color: var(--ink-soft);
+  text-decoration: none;
+  border-radius: 3px;
+  transition: color .15s ease, background .15s ease;
+}
+nav.rail a .n {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--faint);
+  padding-top: 2px;
+}
+nav.rail a:hover { color: var(--navy); background: var(--surface-2); }
+nav.rail a:hover .n { color: var(--navy); }
+nav.rail a:focus-visible { outline: 2px solid var(--steel); outline-offset: 1px; }
+
+main { min-width: 0; max-width: 78ch; }
+
+/* ---------- sections ---------- */
+section { scroll-margin-top: 20px; padding-bottom: 8px; }
+section + section { margin-top: 62px; }
+
+.sec-head {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  border-top: 2px solid var(--ink);
+  padding-top: 12px;
+  margin-bottom: 22px;
+}
+.sec-head .num {
+  font-family: var(--f-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--steel);
+  letter-spacing: .08em;
+  padding-top: 6px;
+  flex: none;
+}
+.sec-head h2 {
+  font-family: var(--f-display);
+  font-weight: 600;
+  font-size: clamp(1.5rem, 1.2rem + 1vw, 2rem);
+  line-height: 1.18;
+  letter-spacing: -.016em;
+  margin: 0;
+  text-wrap: balance;
+}
+
+h3 {
+  font-family: var(--f-body);
+  font-weight: 600;
+  font-size: 1.06rem;
+  letter-spacing: -.004em;
+  margin: 34px 0 10px;
+  color: var(--ink);
+}
+h4 {
+  font-family: var(--f-mono);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 26px 0 8px;
+}
+
+p { margin: 0 0 14px; max-width: var(--measure); }
+.lede { font-size: 1.05rem; color: var(--ink-soft); max-width: 64ch; }
+
+ul.body, ol.body { margin: 0 0 16px; padding-left: 20px; max-width: var(--measure); }
+ul.body li, ol.body li { margin-bottom: 7px; }
+ul.body li::marker { color: var(--steel); }
+ol.body li::marker { color: var(--steel); font-family: var(--f-mono); font-size: .85em; }
+
+strong { font-weight: 600; color: var(--ink); }
+em { font-style: italic; color: var(--ink-soft); }
+a { color: var(--navy); }
+
+code {
+  font-family: var(--f-mono);
+  font-size: .855em;
+  background: var(--mono-bg);
+  color: var(--mono-ink);
+  padding: .1em .36em;
+  border-radius: 3px;
+  word-break: break-word;
+}
+
+pre {
+  font-family: var(--f-mono);
+  font-size: 12.8px;
+  line-height: 1.62;
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--steel);
+  padding: 15px 17px;
+  overflow-x: auto;
+  margin: 0 0 18px;
+  border-radius: 0 4px 4px 0;
+}
+pre code { background: none; padding: 0; color: inherit; font-size: inherit; }
+pre .c { color: var(--faint); }
+pre .k { color: var(--teal); font-weight: 500; }
+
+/* ---------- notes ---------- */
+.note {
+  border-left: 3px solid var(--teal);
+  background: var(--teal-bg);
+  padding: 14px 18px;
+  margin: 0 0 20px;
+  max-width: var(--measure);
+  border-radius: 0 4px 4px 0;
+}
+.note.warn { border-left-color: var(--amber); background: var(--amber-bg); }
+.note .tag {
+  display: block;
+  font-family: var(--f-mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--teal);
+  margin-bottom: 6px;
+}
+.note.warn .tag { color: var(--amber); }
+.note p { margin: 0 0 8px; font-size: 14.6px; }
+.note p:last-child { margin-bottom: 0; }
+.note ul { margin: 0; padding-left: 18px; font-size: 14.6px; }
+.note ul li { margin-bottom: 5px; }
+
+/* ---------- tables ---------- */
+.tw { overflow-x: auto; margin: 0 0 22px; }
+table {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 480px;
+  font-size: 14.2px;
+}
+caption {
+  caption-side: bottom;
+  text-align: left;
+  font-size: 12.4px;
+  color: var(--muted);
+  padding-top: 9px;
+  line-height: 1.45;
+}
+th {
+  text-align: left;
+  font-family: var(--f-mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border-bottom: 1.5px solid var(--ink);
+  padding: 0 14px 7px 0;
+  vertical-align: bottom;
+}
+td {
+  padding: 8px 14px 8px 0;
+  border-bottom: 1px solid var(--rule-soft);
+  vertical-align: top;
+}
+tbody tr:last-child td { border-bottom: 1px solid var(--rule); }
+td.num, th.num { text-align: right; font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+th.num { padding-right: 0; }
+td.num { padding-right: 0; }
+td.mono { font-family: var(--f-mono); font-size: 13px; }
+.panel-tag {
+  font-family: var(--f-mono);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: .05em;
+  color: var(--navy);
+}
+
+/* ---------- stage cards ---------- */
+.stages { display: grid; gap: 0; margin: 0 0 24px; border-top: 1px solid var(--rule); }
+.stage {
+  display: grid;
+  grid-template-columns: 84px 1fr;
+  gap: 18px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--rule-soft);
+  align-items: baseline;
+}
+.stage .st {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--steel);
+}
+.stage p { margin: 0; font-size: 14.6px; }
+.stage p b { display: block; font-size: 15px; margin-bottom: 2px; }
+
+/* ---------- figure ---------- */
+figure { margin: 0 0 26px; }
+.figbox {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  padding: 18px 20px 14px;
+  border-radius: 4px;
+  box-shadow: var(--shadow-card);
+  overflow-x: auto;
+}
+figcaption {
+  font-size: 12.4px;
+  color: var(--muted);
+  margin-top: 9px;
+  line-height: 1.45;
+  max-width: 64ch;
+}
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin-top: 12px;
+  font-size: 12.2px;
+  color: var(--muted);
+  font-family: var(--f-mono);
+}
+.legend i { display: inline-block; width: 11px; height: 11px; margin-right: 6px; border-radius: 2px; vertical-align: -1px; }
+svg text { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+
+/* ---------- aug bars ---------- */
+.augrow { display: grid; grid-template-columns: 74px 1fr 118px; gap: 14px; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--rule-soft); }
+.augrow:last-child { border-bottom: 0; }
+.augrow .pl { font-family: var(--f-mono); font-size: 12px; font-weight: 600; color: var(--navy); letter-spacing: .05em; }
+.augbar { display: flex; height: 17px; border-radius: 2px; overflow: hidden; background: var(--surface-2); }
+.augbar .own { background: var(--navy); }
+.augbar .bor { background: var(--tint); border-left: 1px solid var(--surface); }
+.augrow .val { font-family: var(--f-mono); font-size: 12px; font-variant-numeric: tabular-nums; color: var(--muted); text-align: right; }
+
+/* ---------- kicker rule ---------- */
+.endnote {
+  margin-top: 70px;
+  border-top: 2px solid var(--ink);
+  padding-top: 16px;
+  font-size: 13px;
+  color: var(--muted);
+  max-width: var(--measure);
+}
+.endnote code { font-size: 12.4px; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+}
+html { scroll-behavior: smooth; }
+</style>
+</head>
+<body>
+<div class="shell">
+
+<header class="masthead">
+  <p class="eyebrow">TEKNOFEST 2026 · Sağlıkta Yapay Zeka · Üniversite ve Üzeri</p>
+  <h1>PatHUgen Mimarisi</h1>
+  <p class="standfirst">Missense varyantların patojenik/benign sınıflandırması: ham CSV'nin okunmasından teslim JSON'una kadar her adım, her adımın nedeni ve şu an repoda gerçekten çalışan kod.</p>
+</header>
+
+<div class="facts">
+  <div class="fact"><b>3.802</b><span>etiketli varyant, 4 panel</span></div>
+  <div class="fact"><b>351 → 442</b><span>ham kolon → türetilen öznitelik</span></div>
+  <div class="fact"><b>4 × XGBoost</b><span>panel başına tek model</span></div>
+  <div class="fact"><b>0,917</b><span>ortalama dürüst (iç içe CV) F1</span></div>
+  <div class="fact"><b>3 komut</b><span>train · deliver · run</span></div>
+</div>
+
+<div class="cols">
+
+<nav class="rail" aria-label="İçindekiler">
+  <h2>Boru hattı</h2>
+  <ol>
+    <li><a href="#s0"><span class="n">00</span><span>Bir bakışta</span></a></li>
+    <li><a href="#s1"><span class="n">01</span><span>Problem ve metrik</span></a></li>
+    <li><a href="#s2"><span class="n">02</span><span>Veri</span></a></li>
+    <li><a href="#s3"><span class="n">03</span><span>Öznitelik mühendisliği</span></a></li>
+    <li><a href="#s4"><span class="n">04</span><span>Öznitelik seçimi</span></a></li>
+    <li><a href="#s5"><span class="n">05</span><span>Panel-arası artırım</span></a></li>
+    <li><a href="#s6"><span class="n">06</span><span>Model ve sınıf ağırlığı</span></a></li>
+    <li><a href="#s7"><span class="n">07</span><span>Optuna ile ayar</span></a></li>
+    <li><a href="#s8"><span class="n">08</span><span>Şampiyon seçimi</span></a></li>
+    <li><a href="#s9"><span class="n">09</span><span>Karar eşiği</span></a></li>
+    <li><a href="#s10"><span class="n">10</span><span>Dürüst değerlendirme</span></a></li>
+  </ol>
+  <h2>Referans</h2>
+  <ul>
+    <li><a href="#s11"><span class="n">▸</span><span>Dört jenerasyon</span></a></li>
+    <li><a href="#s12"><span class="n">▸</span><span>PatHUgen.py komutları</span></a></li>
+    <li><a href="#s13"><span class="n">▸</span><span>champion_config.json</span></a></li>
+    <li><a href="#s14"><span class="n">▸</span><span>Teslim paketi</span></a></li>
+    <li><a href="#s15"><span class="n">▸</span><span>Sonuçlar</span></a></li>
+    <li><a href="#s16"><span class="n">!</span><span>Riskler ve tuzaklar</span></a></li>
+    <li><a href="#s17"><span class="n">▸</span><span>Atıl klasörler</span></a></li>
+  </ul>
+</nav>
+
+<main>
+
+<!-- ============================================ 00 -->
+<section id="s0">
+  <div class="sec-head"><span class="num">00</span><h2>Bir bakışta</h2></div>
+
+  <p class="lede">Sistem tek cümlede: <strong>dört ayrı panel için dört ayrı XGBoost modeli</strong>, her biri kendi öznitelik listesi, kendi hiperparametreleri ve kendi karar eşiğiyle; bu üç karar da aylar önce yapılmış, aşırı-öğrenme denetiminden geçmiş bir aramanın çıktısı ve bir JSON dosyasında donmuş durumda.</p>
+
+  <p>Yarışma günü çalışan şey basit. Karmaşık olan, <em>o basit şeyin nasıl seçildiği</em>. Repo tam olarak bu ikiliye göre bölünmüş:</p>
+
+  <div class="stages">
+    <div class="stage"><span class="st">Yarışma günü</span><p><b><code>pathugen/</code> paketi</b>Kendi kendine yeten teslim kodu. Veri okuma, öznitelik üretimi, XGBoost, tahmin, JSON doğrulama, paketleme. Sadece numpy/pandas/joblib/xgboost'a bağımlı. Saniyeler sürer.</p></div>
+    <div class="stage"><span class="st">Geliştirme</span><p><b><code>search/</code> paketi</b>Üç kuşak araştırma hattı: <code>reference</code> → <code>improved</code> → <code>sweep</code>. Yüzlerce konfigürasyonu dener, iç içe CV ile ölçer, aşırı-öğrenenleri eler. Saatler sürer, yarışma günü asla çalışmaz.</p></div>
+    <div class="stage"><span class="st">Arayüz</span><p><b><code>champion_config.json</code></b>İkisi arasındaki tek bağlantı. Arama bunu üretir; teslim kodu bunu okur. Kod içinde sabit sayı yok — konfigürasyon <em>veridir</em>, kod değil.</p></div>
+  </div>
+
+  <p>Zincirin tamamı, sırayla:</p>
+
+<pre><code><span class="c"># EĞİTİM (train) — bir kez, yarışmadan önce</span>
+ham CSV (353 kolon)
+  → build_features()          <span class="c"># 351 ham → 442 öznitelik</span>
+  → champion_config'teki liste <span class="c"># 13–38 özniteliğe in</span>
+  → (PAH/CFTR) GENEL'den ödünç satır ekle
+  → XGBoost × 3 tohum, tahminleri ortala
+  → pathugen_model/&lt;PANEL&gt;/vN/ olarak kaydet
+
+<span class="c"># TESLİM (deliver) — test verisi geldiğinde</span>
+test CSV
+  → build_features() <span class="c"># AYNI fonksiyon, kaydedilmiş kategori sözlüğüyle</span>
+  → 3 modelin olasılık ortalaması
+  → olasılık ≥ eşik  ⇒  "1", değilse "0"
+  → JSON şema doğrulaması → deliveryN/ klasörü</code></pre>
+
+  <div class="note">
+    <span class="tag">Neden böyle</span>
+    <p>Yarışma ortamında internet yok, süre kısıtlı ve jüri sonucun yeniden üretilebilir olmasını istiyor. Bu yüzden arama ile teslim <em>fiziksel olarak</em> ayrılmış: teslim paketi <code>search/</code> olmadan da çalışır, eğitim CSV'leri diskte olmasa bile tahmin üretir (kategori sözlüğü model paketine gömülüdür).</p>
+  </div>
+</section>
+
+<!-- ============================================ 01 -->
+<section id="s1">
+  <div class="sec-head"><span class="num">01</span><h2>Problem ve metrik</h2></div>
+
+  <h3>Missense varyant nedir</h3>
+  <p>DNA'daki tek harflik bir değişiklik, proteinin tek bir amino asidini değiştirirse buna <strong>missense varyant</strong> denir. Çoğu zararsızdır (<strong>benign</strong>, etiket 0); bir kısmı proteinin işlevini bozar ve hastalığa yol açar (<strong>patojenik</strong>, etiket 1). Etiketler ACMG/AMP kılavuzuna göre verilmiş; "Pathogenic"+"Likely Pathogenic" → 1, "Benign"+"Likely Benign" → 0 olarak birleştirilmiş.</p>
+
+  <p>Model bize DNA dizisini vermiyor. Onun yerine, varyant hakkında <em>önceden hesaplanmış</em> bir anotasyon profili veriyor: popülasyon frekansları, in-silico zarar tahmin skorları, evrimsel korunum skorları ve amino asit değişiminin kendisi. Kolon isimleri ve genomik koordinatlar kasten anonimleştirilmiş — hiçbir takım cevabı dışarıdan (ClinVar vb.) arayamasın diye.</p>
+
+  <h3>Metrik ve içindeki tuzak</h3>
+  <p>Skor, <strong>patojenik sınıfta ikili F1</strong>. F1, kesinlik (precision) ve duyarlılığın (recall) harmonik ortalaması:</p>
+<pre><code>F1 = 2·TP / (2·TP + FP + FN)</code></pre>
+
+  <p>Tuzak şu: pozitif sınıf <em>çoğunlukta</em>. Hiçbir şey öğrenmeyen, "hepsi patojenik" diyen bir model bile yüksek F1 alır. Pozitif oranı <code>p</code> olan bir veri setinde bu naif tabanın F1'i tam olarak <code>2p/(1+p)</code>'dir:</p>
+
+  <div class="tw">
+  <table>
+    <caption>Naif taban çizgisi. PAH'ta hiçbir şey öğrenmeden 0,909 F1 alınıyor — bir modelin “0,92 F1” demesi tek başına hiçbir şey ifade etmiyor. Bu yüzden projedeki her tabloda taban çizgisi modelin yanında duruyor.</caption>
+    <thead><tr><th>Panel</th><th class="num">Pozitif oranı</th><th class="num">Naif taban F1</th></tr></thead>
+    <tbody>
+      <tr><td class="panel-tag">GENEL</td><td class="num">%73,3</td><td class="num">0,8461</td></tr>
+      <tr><td class="panel-tag">KANSER</td><td class="num">%69,1</td><td class="num">0,8171</td></tr>
+      <tr><td class="panel-tag">PAH</td><td class="num">%83,3</td><td class="num">0,9091</td></tr>
+      <tr><td class="panel-tag">CFTR</td><td class="num">%81,1</td><td class="num">0,8955</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="note">
+    <span class="tag">Neden böyle</span>
+    <p>Bu tuzak, projenin en önemli iki tasarım kararını doğuruyor:</p>
+    <ul>
+      <li><strong>Optuna ve şampiyon seçimi F1 ile değil ROC-AUC ile yapılıyor.</strong> AUC sınıf oranından bağımsızdır. Jürinin test setinin dengesi bize bildirilmedi (şartname ~1:1 ima ediyor, eğitim verisi ise 3:1) — F1'i doğrudan optimize etmek, eğitim setinin dengesine aşırı uyum sağlamak demekti.</li>
+      <li><strong>Eşik ayrı bir adım.</strong> Model olasılık üretir; F1 bir kesim noktası ister. O kesim ayrıca ve panel başına türetiliyor (bkz. bölüm 09).</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================ 02 -->
+<section id="s2">
+  <div class="sec-head"><span class="num">02</span><h2>Veri</h2></div>
+
+  <p>Dört CSV, hepsi aynı 353 kolonluk şemada. Aşağıdaki sayıların hepsi bu oturumda ham CSV'lerden yeniden sayıldı.</p>
+
+  <div class="tw">
+  <table>
+    <caption>Panel profilleri. Eksiklik oranı, <code>Variant_ID</code> ve <code>Label</code> dışındaki 351 öznitelik kolonu üzerinden.</caption>
+    <thead><tr><th>Panel</th><th>Dosya</th><th class="num">Satır</th><th class="num">Patojenik</th><th class="num">Benign</th><th class="num">Eksik</th></tr></thead>
+    <tbody>
+      <tr><td class="panel-tag">GENEL</td><td class="mono">…TRAIN_MASTER.csv</td><td class="num">2.931</td><td class="num">2.149</td><td class="num">782</td><td class="num">%55,3</td></tr>
+      <tr><td class="panel-tag">KANSER</td><td class="mono">…TRAIN_KANSER.csv</td><td class="num">388</td><td class="num">268</td><td class="num">120</td><td class="num">%57,5</td></tr>
+      <tr><td class="panel-tag">PAH</td><td class="mono">…TRAIN_PAH.csv</td><td class="num">372</td><td class="num">310</td><td class="num">62</td><td class="num">%54,6</td></tr>
+      <tr><td class="panel-tag">CFTR</td><td class="mono">…TRAIN_CFTR.csv</td><td class="num">111</td><td class="num">90</td><td class="num">21</td><td class="num">%30,5</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Kolon grupları ve ne oldukları</h3>
+  <p>İsimler anonim, ama değerlerin istatistiksel imzasından ne oldukları çıkarılabildi. Repodaki yorum ve EDA notları bu çıkarımı kayıt altına almış:</p>
+
+  <div class="tw">
+  <table>
+    <caption>Kolon grupları. Gerçek örnekler bu oturumda GENEL panelinden okundu.</caption>
+    <thead><tr><th>Grup</th><th class="num">Adet</th><th>Yorumlanışı</th><th>Gerçek örnek</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">AL_1…AL_334</td><td class="num">334</td><td>103'ü sadece {0,1} → in-silico "zararlı" bayrakları. 231'i sürekli → popülasyon alel frekansları ve zarar skorları.</td><td class="mono">AL_7: 1e-21 … 0,90, medyan 2,8e-4</td></tr>
+      <tr><td class="mono">CAT_1…CAT_6</td><td class="num">6</td><td>Düşük kardinaliteli bağlam. 1–2 popülasyon kodları, 3–5 genotipler, 6 genomik bölge tipi.</td><td class="mono">"EAS&amp;EUR", "AllofUs_AFR", "G/G", "segdup"</td></tr>
+      <tr><td class="mono">EK_1…EK_9</td><td class="num">9</td><td>Sürekli korunum / bileşik skorlar. Aralık −20 … +11,93.</td><td class="mono">EK_7: −3,32 … 10,0, medyan 7,1</td></tr>
+      <tr><td class="mono">AA_1, AA_2</td><td class="num">2</td><td>Referans ve alternatif amino asit harfi. <code>*</code> = dur kodonu.</td><td class="mono">"D" → "V", "W" → "*"</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Eksiklik rastgele değil</h3>
+  <p>Ortalama bir satırda 351 kolonun yaklaşık 192'si boş ve dağılım <strong>çift tepeli</strong>. Bunun sebebi şu: bir varyantın hangi anotasyon araçları tarafından kapsandığı, o varyantın ne kadar iyi çalışılmış olduğunun imzasıdır. İyi anote edilmiş (yaygın, çoğunlukla benign) varyantlarla seyrek anote edilmiş (nadir, çoğunlukla patojenik) varyantlar iki ayrı popülasyon oluşturuyor. Bu yüzden eksiklik doldurulup yok edilmedi — <strong>12 ayrı özniteliğe dönüştürüldü</strong>.</p>
+
+  <h3>Paneller örtüşüyor — ve çelişmiyor</h3>
+  <p>Bu ölçüm, bölüm 05'teki artırım fikrinin tamamının dayanağı. Bu oturumda yeniden doğrulandı:</p>
+
+  <div class="tw">
+  <table>
+    <caption>Panel kesişimleri ve etiket uyumu. Toplam 578 örtüşen varyantın <strong>tamamında</strong> etiketler aynı — örtüşme gerçek bir tekrar, çelişki değil. KANSER/PAH/CFTR birbirleriyle hiç kesişmiyor.</caption>
+    <thead><tr><th>Kesişim</th><th class="num">Ortak varyant</th><th class="num">Etiket çelişkisi</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">GENEL ∩ KANSER</td><td class="num">246</td><td class="num">0</td></tr>
+      <tr><td class="mono">GENEL ∩ PAH</td><td class="num">255</td><td class="num">0</td></tr>
+      <tr><td class="mono">GENEL ∩ CFTR</td><td class="num">77</td><td class="num">0</td></tr>
+      <tr><td class="mono">diğer tüm çiftler</td><td class="num">0</td><td class="num">0</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="note">
+    <span class="tag">Neden dört ayrı model</span>
+    <p>Paneller boyut olarak 26 kat farklı (111 → 2.931), sınıf dengeleri farklı ve — bölüm 15'te görüleceği gibi — seçilen öznitelik listeleri neredeyse tamamen ayrık. Hepsini tek modelde birleştirmek, satır sayısıyla baskın olan GENEL'in diğer üçünü boğması demekti. Yarışma da zaten panel başına ayrı skorluyor.</p>
+  </div>
+</section>
+
+<!-- ============================================ 03 -->
+<section id="s3">
+  <div class="sec-head"><span class="num">03</span><h2>Öznitelik mühendisliği</h2></div>
+
+  <p class="lede">Tek fonksiyon: <code>pathugen/features.py → build_features(df, cat_maps)</code>. 351 ham kolonu <strong>442 özniteliğe</strong> çeviriyor. Satır bazlı ve <strong>etiketten bağımsız</strong> — yani eğitimde ve tahminde birebir aynı kod çalışıyor, ikinci bir "servis" implementasyonu yok, dolayısıyla eğitim/servis sapması yapısal olarak imkânsız.</p>
+
+  <p>442 = <strong>91 türetilmiş</strong> + <strong>8 kategorik kod</strong> + <strong>343 ham</strong> (AL_1…334 ve EK_1…9 olduğu gibi da modele giriyor; ağaç modelleri NaN'ı kendileri idare ettiği için doldurma yapılmıyor).</p>
+
+  <h3>3.1 · Eksiklik meta-öznitelikleri <span style="color:var(--faint);font-weight:400">(12 adet)</span></h3>
+  <p>Eksikliği bilgi olarak kodlayan grup:</p>
+<pre><code>n_missing_total, pct_missing            <span class="c"># satırdaki toplam boş sayısı ve oranı</span>
+n_missing_al, n_missing_ek, n_missing_cat
+is_skeleton      <span class="c"># n_missing_total ≥ 301 → neredeyse hiç anotasyon yok</span>
+is_dense         <span class="c"># n_missing_total ≤ 20  → tam anote edilmiş</span>
+missingness_tier <span class="c"># 5 kademe: (−1,20] (20,100] (100,200] (200,300] (300,351]</span>
+all_ek_missing            <span class="c"># korunum bloğu tamamen yok mu</span>
+population_block_missing  <span class="c"># CAT_1 ve CAT_2 birlikte yok mu</span>
+genotype_block_missing    <span class="c"># CAT_3,4,5 birlikte yok mu</span>
+n_missing_blocks          <span class="c"># yukarıdaki üç bloktan kaçı boş</span></code></pre>
+
+  <div class="note warn">
+    <span class="tag">Bilinen risk — kısayol öğrenme</span>
+    <p>Eksiklikten öğrenmek, varyant-etkisi tahmini literatüründe bilinen bir <em>döngüsellik</em> riskidir: model biyolojiyi değil, "bu varyant ne kadar çalışılmış" bilgisini öğreniyor olabilir. Proje bunu görmezden gelmiyor — <code>search/improved/shortcut_audit.py</code> tam olarak bunu ölçüyor: eksiklik özniteliklerinin tek başına ROC-AUC'sini raporluyor <em>ve</em> hepsini çıkarıp modeli yeniden puanlıyor (ablasyon). Sayı raporda "şeffaflık" başlığı altında açıkça yazıyor.</p>
+  </div>
+
+  <h3>3.2 · Amino asit biyokimyası <span style="color:var(--faint);font-weight:400">(46 adet)</span></h3>
+  <p>Elimizde sadece iki harf var: <code>AA_1</code> (orijinal amino asit) ve <code>AA_2</code> (yerine geçen). Bir modele "D" ve "V" harflerini vermek işe yaramaz. Onun yerine, bu değişimin <em>ne kadar sert</em> olduğunu ölçen yayınlanmış referans tabloları kullanılıyor. Tablolar <code>pathugen/aa_tables.py</code> içine <strong>sabit olarak gömülü</strong> — yarışma ortamında internet olmadığı için.</p>
+
+  <h4>BLOSUM — sıfırdan</h4>
+  <p>BLOSUM (<em>BLO</em>cks <em>SU</em>bstitution <em>M</em>atrix, Henikoff &amp; Henikoff 1992) bir <strong>20×20 amino asit ikame skoru</strong> tablosudur. Nasıl üretildi:</p>
+  <ol class="body">
+    <li>Binlerce protein ailesinin evrimsel olarak hizalanmış, korunmuş bölgeleri ("blok"lar) toplandı.</li>
+    <li>Her hizalanmış sütunda, hangi amino asit çiftlerinin birbirinin yerine geçtiği <em>sayıldı</em>.</li>
+    <li>Gözlenen ikame sıklığı, tesadüfen beklenen sıklığa bölündü ve logaritması alındı (log-odds).</li>
+  </ol>
+  <p>Sonuç şu anlama gelir: <strong>pozitif skor</strong> = bu değişim doğada, korunmuş bölgelerde bile <em>tesadüften sık</em> görülüyor, yani protein onu tolere ediyor. <strong>Negatif skor</strong> = tesadüften <em>seyrek</em> görülüyor, yani evrim bu değişimi eliyor — muhtemelen zararlı.</p>
+
+  <div class="tw">
+  <table>
+    <caption>Kodda gömülü olan gerçek BLOSUM62 değerleri (<code>pathugen/aa_tables.py</code>, <code>_B62_ROWS</code>).</caption>
+    <thead><tr><th>Değişim</th><th class="num">BLOSUM62</th><th>Yorumu</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">R → K (Arg→Lys)</td><td class="num">+2</td><td>İkisi de bazik, artı yüklü. Protein çoğu zaman fark etmez.</td></tr>
+      <tr><td class="mono">D → E (Asp→Glu)</td><td class="num">+2</td><td>İkisi de asidik, eksi yüklü. Muhafazakâr değişim.</td></tr>
+      <tr><td class="mono">I → V (Ile→Val)</td><td class="num">+3</td><td>İkisi de dallı, hidrofobik. Neredeyse denk.</td></tr>
+      <tr><td class="mono">D → W (Asp→Trp)</td><td class="num">−4</td><td>Küçük, yüklü, suda çözünen → kocaman, aromatik, yağsever. Sert.</td></tr>
+      <tr><td class="mono">C → C (Cys→Cys)</td><td class="num">+9</td><td>Tablodaki en yüksek köşegen: sistein disülfid köprüsü kurar, evrim onu asla değiştirmez.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <p>Sondaki sayı (45 / 62 / 80) <strong>hangi benzerlik düzeyindeki dizilerden üretildiği</strong> anlamına gelir. BLOSUM62, %62 ve üzeri özdeşliğe sahip diziler kümelenerek üretilmiş; BLOSUM45 daha uzak akrabalardan, BLOSUM80 daha yakın akrabalardan. Bu yüzden proje <strong>üçünü birden</strong> öznitelik yapıyor: aynı değişimin farklı evrimsel mesafelerdeki görünümü farklı bilgi taşıyor.</p>
+
+  <div class="note warn">
+    <span class="tag">Koddaki incelik</span>
+    <p>BLOSUM62 tam sayı tablosu olarak elle gömülü. BLOSUM45 ve 80 ise <code>_load_blosum()</code> ile <strong>Biopython'dan yüklenmeye çalışılıyor; Biopython kurulu değilse sessizce BLOSUM62'ye düşüyor.</strong> Yani Biopython yoksa <code>blosum45</code>, <code>blosum62</code> ve <code>blosum80</code> üç özdeş kolon olur. GENEL'in şampiyon listesinde <em>hem</em> <code>blosum62</code> <em>hem</em> <code>blosum80</code>, PAH'ta ise <code>blosum80</code> var — eğitim ile teslim ortamının bu konuda aynı olması gerekir. <code>requirements.txt</code>'i kontrol etmeye değer.</p>
+  </div>
+
+  <h4>Grantham mesafesi</h4>
+  <p>BLOSUM "evrim ne yapmış"a bakar; <strong>Grantham (1974)</strong> ise doğrudan <strong>fiziksel-kimyasal</strong> bakar. İki amino asit arasındaki mesafeyi üç özellikten hesaplar: yan zincir <em>bileşimi</em> (c), <em>polarite</em> (p) ve <em>hacim</em> (v):</p>
+<pre><code>D(a,b) = ρ · √[ α(c<sub>a</sub>−c<sub>b</sub>)² + β(p<sub>a</sub>−p<sub>b</sub>)² + γ(v<sub>a</sub>−v<sub>b</sub>)² ]
+
+α = 1,833   β = 0,1018   γ = 0,000399   ρ = 50,723</code></pre>
+  <p>Bu formül <code>aa_tables.py → grantham()</code> içinde birebir bu sabitlerle duruyor. Ürettiği değerler ~5 ile 215 arasında. Doğrulanmış örnekler: <strong>Ser↔Ala = 99</strong>, <strong>Arg↔Lys = 26</strong> (çok benzer), <strong>Cys↔Trp = 215</strong> (tablodaki maksimum — en sert değişim).</p>
+
+  <p>BLOSUM ile Grantham birbirinin yerine geçmez, birbirini tamamlar: biri "tarih ne diyor", diğeri "kimya ne diyor". İkisi çelişebilir ve o çelişki de bilgidir.</p>
+
+  <h4>Dokuz fizikokimyasal skala <span style="color:var(--faint);font-weight:400">(36 öznitelik)</span></h4>
+  <p>Her amino asit için 9 sayısal skala tanımlı: <code>hydropathy</code> (su sevmezlik, Kyte–Doolittle), <code>weight</code> (molekül ağırlığı), <code>volume</code>, <code>polarity</code>, <code>pi</code> (izoelektrik nokta), <code>charge</code>, ve üç ikincil yapı eğilimi: <code>helix_prop</code>, <code>sheet_prop</code>, <code>turn_prop</code> (Chou–Fasman).</p>
+  <p>Her skala için <strong>dört</strong> öznitelik üretiliyor — 9 × 4 = 36:</p>
+<pre><code>hydropathy_1     <span class="c"># orijinal amino asidin değeri</span>
+hydropathy_2     <span class="c"># yeni amino asidin değeri</span>
+d_hydropathy     <span class="c"># fark (yönlü: v2 − v1)</span>
+absd_hydropathy  <span class="c"># farkın mutlak değeri (yönsüz: ne kadar büyük sıçrama)</span></code></pre>
+  <p>Yönlü ve yönsüz farkın <em>ikisinin birden</em> olması bilinçli: bazı bağlamlarda "hidrofobik→hidrofilik" ile "hidrofilik→hidrofobik" farklı sonuç doğurur (yön önemlidir); bazılarında sadece sıçramanın büyüklüğü önemlidir. Ağaç modelinin hangisini kullanacağına kendisi karar verir.</p>
+
+  <p>Kalan 6 öznitelik: <code>is_stop_gain</code> (AA_2 = <code>*</code> → protein erken kesiliyor, çok güçlü patojenik sinyal), <code>is_stop_loss</code>, <code>aa_missing</code>, <code>aa1_nonstd</code>/<code>aa2_nonstd</code> (20 standart harf dışında bir şey), ve <code>group_change</code> — amino asit apolar/aromatik/polar/pozitif/negatif gruplarından birinden diğerine mi geçmiş (0/1).</p>
+
+  <h3>3.3 · In-silico oylama istatistikleri <span style="color:var(--faint);font-weight:400">(7 adet)</span></h3>
+  <p>AL kolonlarının bir kısmı sadece 0/1 değeri alıyor — bunlar farklı tahmin araçlarının "zararlı mı?" oyları. Kod bunları çalışma anında tespit edip bir <strong>jüri</strong> gibi özetliyor:</p>
+<pre><code>n_tools_available    <span class="c"># bu varyant için kaç araç görüş bildirmiş</span>
+damaging_vote_count  <span class="c"># kaçı "zararlı" demiş</span>
+damaging_vote_ratio  <span class="c"># oran (araç sayısı satırdan satıra değişiyor)</span>
+benign_vote_count
+unanimous_damaging   <span class="c"># hepsi zararlı dedi</span>
+unanimous_benign     <span class="c"># hepsi zararsız dedi</span>
+conflicting_votes    <span class="c"># araçlar birbiriyle çelişiyor ← en bilgilendirici olan</span></code></pre>
+  <p>Buradaki fikir: tek bir aracın oyundan çok, <strong>oybirliği ile çelişki arasındaki fark</strong> bilgi taşıyor. Araçların hepsinin aynı şeyi söylediği varyant kolay; çelişkili olan zor — ve model bunu bilmeli.</p>
+
+  <h3>3.4 · AL ve EK dağılım özetleri <span style="color:var(--faint);font-weight:400">(20 adet)</span></h3>
+  <p>231 sürekli AL kolonunu tek tek kullanmak yerine, satırın <em>dağılım şeklini</em> özetleyen öznitelikler. Alel frekansları on kat büyüklüklerde değiştiği için log dönüşümleri kritik:</p>
+<pre><code>al_cont_count / _mean / _max / _min / _std
+al_log_mean / _max / _min / _std / _range / _iqr   <span class="c"># log1p uzayında</span>
+al_n_rare        <span class="c"># kaç frekans 0 &lt; f &lt; 1e-3   (nadir)</span>
+al_n_ultrarare   <span class="c"># kaç frekans 0 &lt; f &lt; 1e-4   (çok nadir)</span>
+al_neglog10_min_pos     <span class="c"># −log10(en küçük pozitif frekans)</span>
+al_frac_above_logmed    <span class="c"># satır medyanının üstündeki kolon oranı</span>
+ek_count / ek_mean / ek_max / ek_min / ek_std</code></pre>
+  <p><code>al_n_ultrarare</code> özellikle önemli çıkmış: dört panelin üçünde seçilen listede yer alıyor. Sezgisi doğrudan biyolojik — <strong>patojenik varyantlar nadir olmak zorundadır</strong>, çünkü yaygın olsalardı seçilim onları çoktan elemiş olurdu.</p>
+
+  <h3>3.5 · Etkileşimler ve kategorik kodlama</h3>
+  <p>EDA / t-SNE / Orange sıralama çalışmalarından türetilen 6 çarpım özniteliği. Ağaç modelleri çarpımları doğrudan öğrenemez (sadece eksene paralel bölme yaparlar), o yüzden elle veriliyor:</p>
+<pre><code>ek_max_x_grantham        <span class="c"># korunum × kimyasal sertlik</span>
+ek_mean_x_completeness   <span class="c"># korunum × (1 − eksiklik oranı)</span>
+al_logmax_x_ek_max
+missingtier_x_ekcount    <span class="c"># GENEL ve KANSER'in seçili listesinde ilk sıralarda</span>
+votes_x_grantham         <span class="c"># PAH'ın seçili listesinde</span>
+votes_x_ek_mean</code></pre>
+
+  <p>Kategorikler (<code>CAT_1…6</code> + iki amino asit harfi) tam sayıya kodlanıyor. Kritik nokta: kodlama sözlüğü <strong>eğitim verisinden türetilir ve model paketine kaydedilir</strong> (<code>cat_maps.joblib</code>). Tahmin anında aynı sözlük yüklenir; test verisinde daha önce görülmemiş bir kategori gelirse <code>0</code>'a düşer.</p>
+
+  <div class="note">
+    <span class="tag">Neden kaydediliyor da yeniden hesaplanmıyor</span>
+    <p>Araştırma hattı (<code>search.reference</code>) bu sözlüğü her tahminde eğitim CSV'sinden yeniden türetiyordu. Yarışma kılavuzu ise sistemin <strong>internetsiz</strong> ve <strong>sadece model paketindeki dosyalarla</strong> çalışmasını istiyor. Eğer bir kategori kodu tahmin anında eğitimdekinden farklı bir şey ifade etseydi, modelin öğrendiği bölmeler sessizce yanlış girdiyi okurdu — hata vermeden, yanlış cevap üreterek. Bu yüzden teslim kodunda sözlük paketin içinde.</p>
+  </div>
+</section>
+
+<!-- ============================================ 04 -->
+<section id="s4">
+  <div class="sec-head"><span class="num">04</span><h2>Öznitelik seçimi</h2></div>
+
+  <p class="lede">442 öznitelik, 111 satırlık CFTR paneli için felakettir. Seçim adımı bu oranı 13–38 özniteliğe indiriyor. Yöntem: <strong>null-importance</strong> (<code>search/reference/selection.py</code>).</p>
+
+  <h3>Null-importance nasıl çalışır</h3>
+  <p>Klasik "önem sıralaması"nın problemi şudur: gürültülü bir öznitelik bile, yeterince kategorisi veya çözünürlüğü varsa, ağaç modelinde <em>bir miktar</em> önem skoru toplar. "En yüksek 30'u al" demek, o gürültüyü de almak demektir.</p>
+  <p>Null-importance bunu bir <strong>hipotez testine</strong> çevirir:</p>
+  <ol class="body">
+    <li>Gerçek etiketlerle LightGBM eğit, her özniteliğin <em>gain</em> önemini al. Bunu <strong>5 kez</strong> yap ve ortala → <code>actual</code>.</li>
+    <li>Etiketleri <strong>karıştır</strong> (shuffle) ve aynı modeli tekrar eğit. Artık öznitelik-etiket ilişkisi yok; ölçülen önem tamamen şanstır. Bunu <strong>40 kez</strong> yap → gürültü dağılımı.</li>
+    <li>Her öznitelik için gürültü dağılımının <strong>95. yüzdeliğini</strong> hesapla. Gerçek önem bu eşiği geçiyorsa, o öznitelik şansla açıklanamaz → <em>kapıyı geçti</em>.</li>
+    <li>Ayrıca bir güvenlik ağı: <code>gain_score = log((1+actual)/(1+null_p75))</code> sıralamasında ilk K de alınır. K = satır sayısı ÷ 12, en az 10, en çok 50 — yani <strong>panel küçüldükçe seçilen öznitelik sayısı da küçülür</strong>.</li>
+    <li>Nihai karar: <code>keep = kapıyı_geçti VEYA ilk_K'da</code>.</li>
+  </ol>
+
+  <div class="note">
+    <span class="tag">Neden 40 karıştırma</span>
+    <p>Gürültü dağılımının 95. yüzdeliğini kestirmek için yeterli örneklem gerekir; 40 koşu bunu makul maliyetle verir. İç içe CV içinde bu sayı 25'e düşürülür (<code>n_null=25</code>) — çünkü orada bu iş <em>her dış kat için</em> tekrar yapılıyor ve maliyet 10 katına çıkıyor.</p>
+  </div>
+
+  <h3>"hybrid" varyantı — ReliefF kapısı</h3>
+  <p>İkinci bir yöntem daha var ve GENEL paneli bunu kullanıyor. <strong>ReliefF</strong> tamamen farklı bir mantıkla çalışır: örnek bazlı, komşuluk temelli.</p>
+  <p>Rastgele bir varyant seç. En yakın <em>aynı sınıftan</em> k komşusunu ("hit") ve en yakın <em>karşı sınıftan</em> k komşusunu ("miss") bul. Her öznitelik için:</p>
+<pre><code>ağırlık += ortalama|fark(miss)| − ortalama|fark(hit)|</code></pre>
+  <p>Yani: "bu öznitelik, <em>farklı</em> sınıftaki komşularda farklı, <em>aynı</em> sınıftaki komşularda benzer mi?" Öyleyse ağırlık pozitif, öznitelik ayırt edici. <strong>Negatif ağırlık</strong> ise şu anlama gelir: bu özniteliğin değerini bilmek, komşuları sınıflandırmayı kolaylaştırmak yerine <em>zorlaştırıyor</em>.</p>
+  <p><code>hybrid</code> modu, null-importance'ın seçtiklerini bir de bu kapıdan geçirir:</p>
+<pre><code>keep = null_keep AND (ReliefF ≥ 0 OR ilk-15_InfoGain OR kategorik)</code></pre>
+  <p>"OR" kısmı bir koruma: küresel olarak güçlü bir öznitelik, yerel bir metrik yüzünden sessizce düşmesin diye.</p>
+
+  <div class="note warn">
+    <span class="tag">Ölçülmüş bulgu — ve alınan ders</span>
+    <p>Orange Data Mining ile yapılan sıralama incelemesi iki şey buldu: (1) KANSER'in en yüksek Information Gain'li dört özniteliğini eklemek held-out F1'i <strong>0,9326 → 0,9314</strong>'e <em>geriletti</em> (mevcut sinyalle fazlalıktılar); (2) negatif ReliefF'li öznitelikleri budamak KANSER held-out F1'ini <strong>0,891 → 0,911</strong>'e çıkardı, 36 yerine 22 öznitelikle.</p>
+    <p>Peki neden hybrid varsayılan değil? Çünkü dört panelden yalnızca KANSER'in marjı tek bölme gürültüsünü aşıyordu. <strong>Tek bir bölmede ölçülen iyileşme, iyileşme değildir.</strong> İlginç son: <code>search.sweep</code> tüm kombinasyonları taradığında bu el yapımı hipotezi <em>tersine çevirdi</em> — bugünkü konfigürasyonda hybrid'i KANSER değil <strong>GENEL</strong> kullanıyor.</p>
+  </div>
+</section>
+
+<!-- ============================================ 05 -->
+<section id="s5">
+  <div class="sec-head"><span class="num">05</span><h2>Panel-arası artırım</h2></div>
+
+  <p class="lede">Projenin en cesur ve en çok sorgulanacak parçası. CFTR'de sadece <strong>21 benign satır</strong> var. 21 örnekten kararlı bir karar sınırı öğrenilemez.</p>
+
+  <h3>Fikir</h3>
+  <p>Sentetik örnek üretmek (SMOTE) burada işe yaramaz: %55 eksik, 442 boyutlu bir uzayda enterpolasyonla üretilen "varyant profilleri" gerçekte var olamaz. Onun yerine <strong>gerçek satır ödünç alınıyor</strong>: GENEL panelinden, hedef panelde <em>bulunmayan</em> varyantlar alınıp hedef panelin eğitim kümesine ekleniyor.</p>
+
+  <figure>
+    <div class="figbox">
+      <div class="augrow"><span class="pl">GENEL</span><div class="augbar"><span class="own" style="width:96.2%"></span></div><span class="val">2.931 (kaynak)</span></div>
+      <div class="augrow"><span class="pl">KANSER</span><div class="augbar"><span class="own" style="width:12.7%"></span></div><span class="val">388 (reddedildi)</span></div>
+      <div class="augrow"><span class="pl">PAH</span><div class="augbar"><span class="own" style="width:12.2%"></span><span class="bor" style="width:87.8%"></span></div><span class="val">372 → 3.048</span></div>
+      <div class="augrow"><span class="pl">CFTR</span><div class="augbar"><span class="own" style="width:3.7%"></span><span class="bor" style="width:96.3%"></span></div><span class="val">111 → 2.965</span></div>
+      <div class="legend"><span><i style="background:var(--navy)"></i>panelin kendi satırları</span><span><i style="background:var(--tint);border:1px solid var(--rule)"></i>GENEL'den ödünç</span></div>
+    </div>
+    <figcaption>Eğitim satır sayıları. CFTR'nin eğitim kümesinin %96'sı ödünç satırdan oluşuyor — ama <strong>değerlendirme ve eşik hâlâ yalnızca CFTR'nin kendi 111 satırında</strong> yapılıyor.</figcaption>
+  </figure>
+
+  <h3>Neden sızıntı değil</h3>
+  <p>Üç adımlı argüman, ve üçü de ölçülmüş:</p>
+  <ol class="body">
+    <li><strong>Havuz filtreleniyor.</strong> Sadece <code>Variant_ID</code>'si hedef panelde <em>olmayan</em> GENEL satırları alınıyor. Dolayısıyla bu satırlar panelin hiçbir CV katında görünemez — bir eğitim katına eklenmeleri bir doğrulama satırını sızdıramaz.</li>
+    <li><strong>Sadece eğitime giriyor.</strong> Kodda bu, <code>run_cv</code>'nin <code>_append_aug</code> fonksiyonuyla garanti altında: ödünç satırlar yalnızca <code>X_tr</code>'ye ekleniyor, <code>X_va</code>'ya asla.</li>
+    <li><strong>Örtüşme çelişki değil.</strong> Paneller arası 578 ortak varyantın <strong>tamamında etiketler aynı</strong> (bölüm 02). Bu ölçüm olmasaydı fikrin tamamı savunulamazdı.</li>
+  </ol>
+
+  <h3>Neden KANSER hariç</h3>
+  <p>KANSER'de de denendi ve <strong>çok tohumlu held-out kontrolde kaybetti</strong> — kanser geni sinyali seyreltilemeyecek kadar kendine özgü. Projenin kabul kuralı: bir yöntem ana hatta ancak bağımsız bir denemede kazanırsa girer. Artırım PAH ve CFTR'de geçti, KANSER'de kaldı.</p>
+  <p>Kazanım: CFTR'de iç içe AUC yaklaşık <strong>0,88 → 0,948</strong>. PAH'ta F1 iyileşti (asıl darboğaz olan sıralama kalitesi hâlâ açık — bkz. bölüm 15).</p>
+
+  <div class="note warn">
+    <span class="tag">Koddaki gizli tuzak</span>
+    <p><code>champion_config.json</code>'daki <code>aug_frac</code> alanı <strong>0,5 gibi kısmi bir değeri desteklemiyor.</strong> <code>pathugen/augment.py</code> sadece <code>aug_frac &gt; 0</code> mı diye bakıyor ve havuzun <em>tamamını</em> ekliyor. Arama hattı (<code>search.sweep</code>) 0,0 / 0,5 / 1,0 üçlüsünü deniyor; eğer gelecekte bir panel için 0,5 kazanırsa, teslim kodu bunu sessizce 1,0 olarak uygular. Şu anki dört konfigürasyon sadece 0,0 ve 1,0 kullandığı için aktif bir hata yok — ama gizli bir hata var.</p>
+  </div>
+</section>
+
+<!-- ============================================ 06 -->
+<section id="s6">
+  <div class="sec-head"><span class="num">06</span><h2>Model ve sınıf ağırlığı</h2></div>
+
+  <h3>Aday havuzu (arama sırasında)</h3>
+  <p>Araştırma hattı beş model ailesini yarıştırıyor — bilinçli olarak <em>farklı tümevarım önyargılarıyla</em>, çünkü aynı hatayı yapan beş model bir araya gelince bir şey kazandırmaz:</p>
+
+  <div class="tw">
+  <table>
+    <caption><code>search/reference/modeling.py → MAKERS</code>. Ağaç dışı iki model, eksik veriyi kendi başına idare edemediği için medyan doldurma + hedef kodlama içeren bir <code>Pipeline</code>'a sarılıyor.</caption>
+    <thead><tr><th>Model</th><th>Getirdiği önyargı</th><th>Eksik veri</th><th>Kategorik</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">XGBoost</td><td>Seviye bazlı artırma, histogram bölme</td><td>Yerel (öğrenilmiş varsayılan yön)</td><td>Tam sayı kod</td></tr>
+      <tr><td class="mono">LightGBM</td><td>Yaprak bazlı — daha derin, asimetrik ağaçlar</td><td>Yerel</td><td><code>categorical_feature</code></td></tr>
+      <tr><td class="mono">CatBoost</td><td>Sıralı artırma, simetrik ağaçlar</td><td>Yerel</td><td><code>cat_features</code></td></tr>
+      <tr><td class="mono">ExtraTrees</td><td>Aşırı rastgele bölme → farklı varyans profili</td><td>Medyan doldurma</td><td>Hedef kodlama</td></tr>
+      <tr><td class="mono">L1 Lojistik</td><td>Seyrek <em>doğrusal</em> — tek ağaç-dışı görüş</td><td>Medyan + ölçekleme</td><td>Hedef kodlama</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <p><strong>Dört panelin dördünde de kazanan tek bir XGBoost oldu.</strong> Bu bir varsayım değil, çapraz doğrulanmış bir sonuç — bu yüzden teslim paketi (<code>pathugen/model.py</code>) sadece 41 satır ve sadece XGBoost'u tanıyor.</p>
+
+  <h3>Sınıf ağırlığında tersine dönen sezgi</h3>
+  <p>XGBoost'ta dengesiz sınıflar <code>scale_pos_weight</code> ile idare edilir ve standart tarif <code>n_neg / n_pos</code>'tur. Buradaki incelik: <strong>çoğunluk sınıfı pozitif</strong>, dolayısıyla bu oran 1'den <em>küçük</em> — yani standart tarif pozitif sınıfı <em>aşağı</em> ağırlıklıyor. "Azınlığı yukarı çek" sezgisi burada tersine dönüyor.</p>
+  <p>Bu yüzden Optuna'ya bunun üstünde bir çarpan aratılıyor: <code>spw_mult ∈ [0,5 … 6,0]</code> (log ölçekte). Efektif ağırlık <code>(n_neg/n_pos) × spw_mult</code> oluyor. Şampiyon konfigürasyonlardaki gerçek değerler (artırım <em>sonrası</em> satır sayılarıyla hesaplandı):</p>
+
+  <div class="tw">
+  <table>
+    <caption>Optuna'nın bulduğu efektif sınıf ağırlıkları. GENEL ve CFTR'de ~1,0 çıkması dikkat çekici: arama, "dengesizliği tamamen nötrle" demiş. KANSER ve PAH'ta ise pozitif sınıf gerçekten yukarı çekilmiş.</caption>
+    <thead><tr><th>Panel</th><th class="num">Eğitim satırı</th><th class="num">n_neg/n_pos</th><th class="num">spw_mult</th><th class="num">Efektif</th></tr></thead>
+    <tbody>
+      <tr><td class="panel-tag">GENEL</td><td class="num">2.931</td><td class="num">0,364</td><td class="num">2,900</td><td class="num">1,055</td></tr>
+      <tr><td class="panel-tag">KANSER</td><td class="num">388</td><td class="num">0,448</td><td class="num">5,177</td><td class="num">2,318</td></tr>
+      <tr><td class="panel-tag">PAH</td><td class="num">3.048</td><td class="num">0,375</td><td class="num">5,797</td><td class="num">2,173</td></tr>
+      <tr><td class="panel-tag">CFTR</td><td class="num">2.965</td><td class="num">0,369</td><td class="num">4,307</td><td class="num">1,589</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Üç tohumlu topluluk</h3>
+  <p>Her panelin şampiyonu <strong>3 farklı rastgele tohumla yeniden eğitiliyor ve tahminleri ortalanıyor</strong> (<code>SEED_ENSEMBLE = 3</code>, tohumlar 42/43/44). Sebep: tek bir ağaç kurma çekilişinin şanslı ya da şanssız olma riskini azaltmak. Maliyeti neredeyse sıfır, faydası en çok en küçük panelde (CFTR).</p>
+</section>
+
+<!-- ============================================ 07 -->
+<section id="s7">
+  <div class="sec-head"><span class="num">07</span><h2>Optuna ile hiperparametre ayarı</h2></div>
+
+  <p>Optuna, <strong>TPE</strong> (Tree-structured Parzen Estimator) örnekleyicisiyle çalışan bir Bayesçi arama kütüphanesi. Rastgele aramadan farkı: geçmiş denemelerin sonuçlarına bakarak "iyi çıkma olasılığı yüksek" bölgeleri daha sık örnekler.</p>
+
+  <h4>XGBoost arama uzayı <span style="font-family:var(--f-mono);text-transform:none;letter-spacing:0">(search/reference/tuning.py)</span></h4>
+<pre><code>max_depth         2 – 5   <span class="c"># küçük panelde (n &lt; 400); büyükte 2 – 8</span>
+learning_rate     0,01 – 0,3   (log)
+subsample         0,5 – 1,0
+colsample_bytree  0,3 – 1,0
+min_child_weight  1 – 10
+gamma             0,0 – 5,0
+reg_alpha         1e-8 – 10   (log)
+reg_lambda        1e-8 – 10   (log)
+spw_mult          0,5 – 6,0   (log)</code></pre>
+
+  <p>Üç önemli detay:</p>
+  <ul class="body">
+    <li><strong>Hedef F1 değil AUC.</strong> <code>OBJECTIVE = "auc"</code>. Sebep bölüm 01'de: test setinin sınıf dengesi bilinmiyor, AUC ise dengeden bağımsız.</li>
+    <li><strong>Deneme #0 her zaman elle ayarlanmış varsayılan</strong> (<code>study.enqueue_trial(DEFAULTS[kind])</code>). Böylece arama hiçbir koşulda makul bir taban çizgisinin altına düşemez.</li>
+    <li><strong>Tohum titretmesi.</strong> QUICK modu kapalıyken her denemenin CV katları farklı tohumla kuruluyor (<code>tseed = seed + trial.number</code>). Böylece "şanslı bir kat bölünmesine" aşırı uyum sağlayan parametreler kazanamaz.</li>
+    <li><strong>Eşik aramanın dışında.</strong> Optuna eşiği ayarlamıyor; yoksa arama tek bir çalışma noktasına aşırı uyum sağlardı.</li>
+  </ul>
+
+  <div class="note warn">
+    <span class="tag">Geçmişte bulunan ve düzeltilen hata</span>
+    <p>Sweep'in eski bir sürümünde <code>REUSE_PARAMS</code> bayrağı ve diskte bir parametre önbelleği vardı. Bir denetim şunu buldu: önbellek dosyaları diskte varsa, "sıfırdan arama" diye çalıştırılan <code>python PatHUgen.py run</code> aslında <strong>sıfır Optuna denemesi</strong> yapıyordu. Hem bayrak hem önbellek kaldırıldı; şimdi her (seçim yöntemi × artırım oranı) hücresi kendi taze aramasını yapıyor. Bu <code>WARNING.md</code>'de kayıtlı.</p>
+  </div>
+</section>
+
+<!-- ============================================ 08 -->
+<section id="s8">
+  <div class="sec-head"><span class="num">08</span><h2>Şampiyon seçimi ve yığma</h2></div>
+
+  <p>Ayarlama bittiğinde panel başına <strong>8 aday</strong> yarışıyor: 5 tek model, hepsinin olasılık ortalaması (<code>mean</code>), ve iki yığma (stacking) varyantı — <code>stacked_trees</code> (üç artırma modeli) ve <code>stacked_all</code> (beşi birden).</p>
+
+  <h3>Yığma nasıl kurulmuş</h3>
+  <p>Her temel modelin OOF olasılıkları <strong>isotonik regresyonla kalibre</strong> ediliyor (monoton, parametresiz kalibrasyon), sonra bir lojistik meta-öğrenici bu kalibre kolonları birleştiriyor. Kalibrasyon her kat içinde ayrı yapılıyor — sızıntısız.</p>
+
+  <h3>One-SE kuralı — basitlik tarafında hata yap</h3>
+  <p>Adaylar AUC'ye göre sıralanıyor ama <strong>en yüksek AUC otomatik kazanmıyor</strong>. Kural şu:</p>
+  <ol class="body">
+    <li>OOF satırları <strong>200–300 kez bootstrap</strong>lanıyor (yerine koyarak yeniden örnekleme), her adayın AUC'sinin standart hatası çıkarılıyor.</li>
+    <li>En iyinin AUC'sinden bir standart hata <em>aşağısı</em> bir taban belirleniyor.</li>
+    <li>O tabanın üstündeki tüm adaylar arasından <strong>en basiti</strong> seçiliyor (karmaşıklık sırası: single &lt; mean &lt; stacked_trees &lt; stacked_all).</li>
+  </ol>
+  <p>Yani bir topluluğun kazanabilmesi için <strong>ölçüm gürültüsünden fazla fark atması</strong> gerekiyor. Dört panelin dördünde de bunu başaramadılar — yığma mimarisi kodda hâlâ duruyor ama kadroya giremedi.</p>
+
+  <h3>İki farklı One-SE: marjinal ve eşleştirilmiş</h3>
+  <p>Bu, projenin ikinci kuşağının (<code>search.improved</code>) test ettiği bir hipotez:</p>
+  <ul class="body">
+    <li><strong>marginal</strong> (referans hattı): aday, <em>en iyinin</em> tek başına standart hatasıyla karşılaştırılır. n=111'de bu bant o kadar geniş ki hiçbir şeyi ayırt edemez — en basit aday her zaman kazanır.</li>
+    <li><strong>paired</strong> (geliştirilmiş): iki adayın bootstrap dağılımlarının <em>farkının</em> dağılımına bakılır (<code>d = boot[best] − boot[k]</code>). İki aday büyük ölçüde aynı satırlarda hata yaptığı için bu fark dağılımı çok daha dar — gerçekten daha iyi bir topluluk artık kazanabilir.</li>
+  </ul>
+
+  <div class="note warn">
+    <span class="tag">Ölçülmüş başarısızlık — projenin dönüm noktası</span>
+    <p>Eşleştirilmiş kural PAH'ta <strong>7 modelli bir ortalama topluluğu</strong> şampiyon seçti. Ama hangi adayın "kazandığı" neredeyse her CV katında değişti — <strong>10 dış katta 4 farklı kazanan</strong>. Topluluğun iyimserlik açığı referansa göre üç katına çıktı. Bu gerçek, ölçülmüş bir aşırı-öğrenme başarısızlığıydı; ve tam olarak bu yüzden üçüncü kuşak (<code>search.sweep</code>) bir <strong>şampiyon kararlılığı testi</strong> ekledi (bkz. bölüm 10).</p>
+  </div>
+</section>
+
+<!-- ============================================ 09 -->
+<section id="s9">
+  <div class="sec-head"><span class="num">09</span><h2>Karar eşiği</h2></div>
+
+  <p>Model 0 ile 1 arasında bir olasılık üretir; F1 ise "patojenik" ya da "benign" ister. Aradaki kesim noktası <strong>ayrı ve panel başına türetilen</strong> bir karar.</p>
+
+  <p>0,05 ile 0,95 arasında <strong>181 aday eşik</strong> (0,005 adımla) taranıyor. Tarama, <code>search/improved/threshold.py → scan()</code> içinde vektörleştirilmiş: olasılıklar bir kez sıralanıp kümülatif toplamlarla tüm eşiklerin F1/MCC değerleri tek seferde hesaplanıyor.</p>
+
+  <h3>Dört politika</h3>
+  <p>Hangi eşiğin "en iyi" olduğu, test setinin sınıf dengesi hakkındaki varsayıma bağlı. Proje dördünü de hesaplıyor ve panel başına audit'ten geçeni sabitliyor:</p>
+
+  <div class="tw">
+  <table>
+    <caption>Eşik politikaları. <code>prior_weights(y, p)</code> pozitiflere toplam <code>p</code>, negatiflere <code>1−p</code> ağırlık vererek "test seti bu dengede olsaydı" senaryosunu taklit ediyor.</caption>
+    <thead><tr><th>Politika</th><th>Ne maksimize ediyor</th><th>Hangi varsayımla</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">f1</td><td>Ham F1</td><td>Test seti eğitimle aynı dengede (%73–83 pozitif)</td></tr>
+      <tr><td class="mono">balanced_f1</td><td>1:1 ağırlıklı F1</td><td>Test seti dengeli (şartnamenin ima ettiği)</td></tr>
+      <tr><td class="mono">mcc</td><td>Matthews korelasyon katsayısı</td><td>Dört hücreyi (TP/TN/FP/FN) birlikte ödüllendirir, dengeye daha az duyarlı</td></tr>
+      <tr><td class="mono">minimax</td><td><code>min(F1, dengeli F1)</code></td><td>En kötü senaryoyu koru — saf hedge</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Eşik nasıl sabitleniyor</h3>
+  <p>Tek bir argmax almak tehlikeli: bir keresinde CFTR'de <code>0,135</code> üretmişti — bu bir çalışma noktası değil, uyum artefaktıdır. Bu yüzden iki koruma var:</p>
+  <ul class="body">
+    <li><strong>Kat medyanı</strong> (referans hattı): her CV katı kendi optimum eşiğini bulur, sevk edilen değer katlar arası medyandır.</li>
+    <li><strong>Bootstrap medyanı</strong> (geliştirilmiş hat): veri 31 kez yeniden örneklenir, her örneklem kendi optimumunu verir, medyan alınır.</li>
+  </ul>
+
+  <h3>Prior kayması — yeniden eğitmeden eşiği taşımak</h3>
+  <p>Model paketinde isotonik kalibratör ve eğitim prior'u saklı. Test setinin dengesinin farklı olduğuna dair bir sinyal gelirse, eşik kapalı formülle taşınabiliyor:</p>
+<pre><code>r = hedef_prior / eğitim_prior
+s = (1 − hedef_prior) / (1 − eğitim_prior)
+t' = t·s / (t·s + (1−t)·r)</code></pre>
+  <p>Komut satırından: <code>PatHUgen.py deliver --prior-shift 0.5</code>. Hiçbir şey yeniden eğitilmiyor; sadece kesim noktası kayıyor. <code>predicted_prob</code> etkilenmiyor (jürinin AUROC tarzı metrikleri sıralama tabanlı, kalibrasyona duyarsız).</p>
+</section>
+
+<!-- ============================================ 10 -->
+<section id="s10">
+  <div class="sec-head"><span class="num">10</span><h2>Dürüst değerlendirme ve aşırı-öğrenme denetimi</h2></div>
+
+  <p class="lede">Projede iki sayı var ve farklı şeyler ifade ediyorlar. Bu ayrım, tüm metodolojinin belkemiği.</p>
+
+  <div class="stages">
+    <div class="stage"><span class="st">OOF F1</span><p><b>Modeli <em>seçmek</em> için kullanılan sayı</b>Optimistik. Öznitelik seçimi ve model seçimi panelin tamamını görmüştü. Raporlanır ama güvenilmez.</p></div>
+    <div class="stage"><span class="st">İç içe F1</span><p><b><em>Güvenilecek</em> sayı</b>Her dış katta öznitelik seçimi, şampiyon seçimi ve eşik <strong>yalnızca o katın eğitim satırlarından</strong> yeniden türetilir, sonra dokunulmamış test satırlarında bir kez puanlanır.</p></div>
+    <div class="stage"><span class="st">optimism_gap</span><p><b>İkisinin farkı</b>Aşırı-öğrenmenin doğrudan ölçüsü. Beklendiği gibi örneklem büyüklüğüyle ters orantılı: GENEL'de +0,005, CFTR'de +0,034.</p></div>
+  </div>
+
+  <p>İç içe CV tasarımı: <strong>5 dış kat × 2 tekrar = 10 dış kat</strong>, katmanlı (stratified). Tek bir sabit train/test bölmesi yok — CFTR'de 111 satırdan 20'sini feda etmek istatistiksel olarak yanlış olurdu.</p>
+
+  <h3>Aşırı-öğrenme denetimi — üç test</h3>
+  <p><code>search/sweep/audit.py</code>. Bir konfigürasyon üçünü birden geçmezse <strong>tamamen eleniyor</strong>:</p>
+  <ol class="body">
+    <li><strong>İyimserlik açığı ≤ 0,040.</strong> OOF F1 ile dürüst F1 arasındaki fark bu sınırı aşarsa, seçim süreci veriyi ezberliyor demektir.</li>
+    <li><strong>Şampiyon kararlılığı ≥ %50.</strong> Aynı aday dış katların en az yarısında kazanmalı. <em>Bu, PAH felaketini yakalayacak olan testtir.</em></li>
+    <li><strong>Naif tabanı geçmeli.</strong> Dürüst F1 &gt; <code>2p/(1+p)</code>. Aksi halde model hiçbir şey katmıyordur.</li>
+  </ol>
+  <p>Ayrıca uyarı (elemez): kat başına F1 standart sapması &gt; 0,060 ise "yüksek katlar arası oynaklık" notu düşülür.</p>
+
+  <h3>Hayatta kalanlar nasıl sıralanıyor</h3>
+  <p>Denetimi geçenler <strong>robust</strong> hedefine göre sıralanıyor: <code>min(dürüst F1, dürüst dengeli F1)</code>. Bu bilinçli bir hedge — test setinin gerçek dengesi bilinmediği için, iki senaryonun kötü olanına göre optimize ediliyor. Eşitlik bozucular sırayla: küçük açık, basit strateji, az öznitelik.</p>
+
+  <div class="note warn">
+    <span class="tag">WARNING.md — final teslimden önce okunmalı</span>
+    <p>Dürüst sayılarda <strong>hafif bir iyimserlik sapması kaldı</strong>: her dış katta öznitelik seçimi, model seçimi ve eşik yeniden türetiliyor <em>ama hiperparametreler türetilmiyor</em>. Optuna, eğitim konfigürasyonu başına bir kez ve panelin tamamı üzerinde çalışıyor; aynı parametreler sonra her dış katta kullanılıyor. Dış katın test satırları, Optuna'nın ayar yaparken gördüğü verinin parçasıydı.</p>
+    <p>Neden düzeltilmedi: hiperparametreleri her dış katta yeniden aramak, sweep'in süresini ~6 saatten <strong>150–200+ saate</strong> çıkarıyor. Sapmanın küçük olması bekleniyor (küçük panellerde aşırı-öğrenmeye en yatkın kısımlar — öznitelik ve model seçimi — <em>gerçekten</em> kat başına yeniden yapılıyor), ama rapor edilirken bu kayıt mutlaka belirtilmeli.</p>
+  </div>
+</section>
+
+<!-- ============================================ 11 -->
+<section id="s11">
+  <div class="sec-head"><span class="num">▸</span><h2>Dört jenerasyon: repo neden bu şekilde bölünmüş</h2></div>
+
+  <p>Doğrudan "her şeyi tara"ya (sweep) geçmek mümkündü. Aşamalı gidiş pratikte fark yarattı — çünkü her aşama bir sonrakinin varlık sebebini <em>ölçerek</em> ortaya çıkardı.</p>
+
+  <div class="tw">
+  <table>
+    <caption>Kuşaklar ve her birinin cevapladığı soru.</caption>
+    <thead><tr><th>#</th><th>Paket</th><th>Sorduğu soru</th><th>Bıraktığı miras</th></tr></thead>
+    <tbody>
+      <tr><td class="num">1</td><td class="mono">search/reference/</td><td>Sağlam bir taban çizgisi nedir?</td><td>Güvenilir metodoloji + iç içe CV. PDR'deki sayılar bundan; <strong>96,5 aldı</strong>.</td></tr>
+      <tr><td class="num">2</td><td class="mono">search/improved/</td><td>Şu dört fikir işe yarıyor mu?</td><td>Üçü tuttu; <strong>PAH kırıldı</strong> ve bu bir kazanç oldu — ölçülmüş bir aşırı-öğrenme örneği.</td></tr>
+      <tr><td class="num">3</td><td class="mono">search/sweep/</td><td>Tüm kombinasyonlardan hangisi <em>denetimi geçerek</em> kazanır?</td><td>Otomatik aşırı-öğrenme denetimi + <code>champion_config.json</code>.</td></tr>
+      <tr><td class="num">4</td><td class="mono">pathugen/</td><td>Yarışma günü ne çalışacak?</td><td>Kararlar kapandı. 8 küçük modül, tek model ailesi, sıfır arama.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <p><code>search.improved</code>'in test ettiği dört hipotez: (1) prior-duyarsız eşik politikaları, (2) eşleştirilmiş bootstrap şampiyon seçimi, (3) ikinci bir ReliefF-budanmış öznitelik görünümü (böylece yığmanın girdileri gerçekten çeşitlensin, beş model aynı kolonlara bakmasın), (4) kısayol denetimi + ablasyon.</p>
+
+  <p><code>search.sweep</code>'in taradığı eksenler:</p>
+<pre><code><span class="k">PAHALI</span> (yeniden eğitim gerektirir, her hücre kendi Optuna araması):
+  seçim yöntemi   × artırım oranı
+  {null, hybrid}  × {0,0 · 0,5 · 1,0}     → panel başına 6 hücre
+
+<span class="k">UCUZ</span> (eğitim sonrası, bedava — ve her hücrede tekrar hesaplanır):
+  şampiyon kuralı × aday havuzu × eşik politikası
+  {marginal,paired} × {all,singles} × {f1,balanced_f1,mcc,minimax}
+                                          → 16 karar kombinasyonu
+
+  ⇒ panel başına ~96, dört panelde ~320 aday konfigürasyon</code></pre>
+  <p>Kritik detay: 16 karar kombinasyonunun hepsi <strong>aynı dış katlarda</strong> puanlanıyor (<code>nested_sweep.py</code>). Böylece aralarındaki fark, hangi katın çekildiğinden değil sadece karar katmanından geliyor — ve raporlanan skor asla sonradan seçilmiş bir kiraz değil.</p>
+
+  <p><strong>Sonuç:</strong> hiçbir panelde hiçbir yığma veya ortalama denetimi geçemedi. Dördü de tek, iyi ayarlanmış XGBoost. Bu, basitlik lehine <em>varsayım</em> değil, çapraz doğrulanmış bir <em>argüman</em>.</p>
+</section>
+
+<!-- ============================================ 12 -->
+<section id="s12">
+  <div class="sec-head"><span class="num">▸</span><h2>PatHUgen.py komutları</h2></div>
+
+  <p><code>PatHUgen.py</code> 98 satır ve neredeyse tamamı docstring — gerçek iş <code>pathugen/cli.py</code>'de. Dört komut var.</p>
+
+  <h3><code>train</code> — yarışmadan önce, bir kez</h3>
+<pre><code>python PatHUgen.py train            <span class="c"># dört panel</span>
+python PatHUgen.py train CFTR       <span class="c"># tek panel</span></code></pre>
+  <p>Adım adım (<code>pathugen/train.py</code>):</p>
+  <ol class="body">
+    <li><code>champion_config.json</code> okunur ve doğrulanır. Yoksa <strong>net bir hata</strong> verir — sessiz varsayılana düşmez.</li>
+    <li>Panel CSV'si yüklenir, <code>get_cat_maps()</code> ile kategori sözlüğü türetilir, <code>build_features()</code> çalışır.</li>
+    <li>Konfigürasyondaki öznitelik listesi seçilir. Liste <code>build_features</code>'ın üretmediği bir kolon isterse hata verir.</li>
+    <li><code>aug_frac &gt; 0</code> ise GENEL havuzu eklenir.</li>
+    <li>3 tohumla XGBoost eğitilir.</li>
+    <li><strong>Yeni numaralı sürüm</strong> yazılır: <code>pathugen_model/&lt;PANEL&gt;/vN/</code>. Önceki sürümler <em>asla</em> silinmez.</li>
+  </ol>
+  <p>Kaydedilen paket: <code>seed0..2.joblib</code>, <code>cat_maps.joblib</code>, <code>selected_features.json</code>, <code>config.json</code> (eşik, politika, eğitim prior'u, satır sayıları, zaman damgası). Bir dakikadan kısa sürer — hiçbir arama yapılmaz.</p>
+
+  <h3><code>versions</code></h3>
+  <p>Panel başına eğitilmiş tüm sürümleri listeler ve <code>deliver</code>'ın varsayılan olarak hangisini kullanacağını işaretler.</p>
+
+  <h3><code>deliver</code> — yarışma günü</h3>
+<pre><code>python PatHUgen.py deliver --input-dir /yol/test/csv
+
+<span class="c"># dosya adları tanınmazsa:</span>
+python PatHUgen.py deliver --input-dir DIR \
+  --genel A.csv --kanser B.csv --pah C.csv --cftr D.csv
+
+<span class="c"># diğer bayraklar</span>
+--model-version N   <span class="c"># eski bir sürümü sabitle (varsayılan: en yeni)</span>
+--prior-shift 0.5   <span class="c"># eşiği farklı bir test dengesine taşı</span>
+--skip-copy         <span class="c"># sadece JSON yaz (hızlı deneme; final için kullanma)</span></code></pre>
+  <p>Sırayla: panel dosyalarını isim anahtar kelimesiyle eşle (<code>master</code>/<code>genel</code>, <code>kanser</code>, <code>pah</code>, <code>cftr</code>) → her panel için tahmin üret → <strong>JSON'u yerel olarak doğrula</strong> → doğrulama geçerse <code>deliveryN/</code> klasörünü kur.</p>
+
+  <h3><code>run</code> — aramayı yeniden yap (yarışma günü komutu DEĞİL)</h3>
+  <p><code>search.sweep</code>'i çağırır. Saatler sürer, <code>search/</code> paketinin yanında olmasını gerektirir ve <strong>asla <code>champion_config.json</code>'ı kendiliğinden değiştirmez</strong>. Sonuçları <code>outputs_best/</code>'a yazar; benimseme kasıtlı, manuel bir kopyalama adımıdır.</p>
+
+  <div class="note">
+    <span class="tag">Hata mesajı tasarımı</span>
+    <p><code>cli.py</code> beklenen hataları (<code>FileNotFoundError</code>, <code>RuntimeError</code>, <code>ValueError</code>) yakalayıp <strong>tek satırlık temiz bir mesaj</strong> basıyor, stack trace değil. Sebep açık yazılmış: bu kod süreli yarışma sınavı sırasında canlı çalışıyor; korkutucu bir traceback, jüri karşısında zaman kaybettirir. Traceback görürseniz o bir <em>hata</em>dır, beklenen bir girdi problemi değil.</p>
+  </div>
+</section>
+
+<!-- ============================================ 13 -->
+<section id="s13">
+  <div class="sec-head"><span class="num">▸</span><h2>champion_config.json nasıl okunur</h2></div>
+
+  <p>Panel başına altı alan. <code>train()</code>'in bunlardan gerçekten <em>kullandıkları</em>: <code>features</code>, <code>aug_frac</code>, <code>xgb_params</code>, <code>threshold</code>. Diğer ikisi (<code>selection_method</code>, <code>threshold_policy</code>) yalnızca <strong>kayıt</strong> amaçlı — hangi süreçten çıktığını belgeliyorlar, çalışma zamanında bir etkileri yok. (Öznitelik listesi zaten donmuş olduğu için <code>train</code> seçimi yeniden çalıştırmıyor.)</p>
+
+  <div class="tw">
+  <table>
+    <caption>Şu anki şampiyon konfigürasyon. Dördü de tek XGBoost.</caption>
+    <thead><tr><th>Panel</th><th>Seçim</th><th>Artırım</th><th class="num">Eşik</th><th>Politika</th><th class="num">Öznitelik</th><th class="num">max_depth</th></tr></thead>
+    <tbody>
+      <tr><td class="panel-tag">GENEL</td><td class="mono">hybrid</td><td>yok (kaynak panel)</td><td class="num">0,670</td><td class="mono">balanced_f1</td><td class="num">38</td><td class="num">8</td></tr>
+      <tr><td class="panel-tag">KANSER</td><td class="mono">null</td><td>yok (ölçülerek reddedildi)</td><td class="num">0,705</td><td class="mono">f1</td><td class="num">35</td><td class="num">3</td></tr>
+      <tr><td class="panel-tag">PAH</td><td class="mono">null</td><td>tam GENEL artırımı</td><td class="num">0,595</td><td class="mono">mcc</td><td class="num">37</td><td class="num">3</td></tr>
+      <tr><td class="panel-tag">CFTR</td><td class="mono">null</td><td>tam GENEL artırımı</td><td class="num">0,780</td><td class="mono">balanced_f1</td><td class="num">13</td><td class="num">3</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <p>Okunacak örüntüler:</p>
+  <ul class="body">
+    <li><strong>Derinlik.</strong> Sadece GENEL <code>max_depth=8</code> alabilmiş — 2.931 satırı var. Diğer üçü 3'te kalmış; arama uzayı zaten <code>n &lt; 400</code> panellerde 5'le sınırlı.</li>
+    <li><strong>Öznitelik sayısı satır sayısıyla ölçekleniyor.</strong> CFTR 13, GENEL 38. Bu <code>k = n/12</code> kuralının doğrudan sonucu.</li>
+    <li><strong>Eşikler 0,5'in çok üstünde</strong> (0,595–0,780). Sebep: efektif sınıf ağırlığı pozitifi yukarı çektiği için ham olasılıklar yukarı kayıyor; eşik bunu geri dengeliyor.</li>
+    <li><strong>Politika panel başına farklı</strong>, çünkü panel başına denetimden geçti — keyfi bir seçim değil.</li>
+  </ul>
+
+  <p>Yeni bir sonuç benimseme akışı: <code>run</code> → <code>outputs_best/BEST_CONFIG.md</code>'yi oku → tatmin olduysan <code>outputs_best/champion_config.json</code>'ı kök dizindekinin üstüne kopyala → <code>train</code>.</p>
+</section>
+
+<!-- ============================================ 14 -->
+<section id="s14">
+  <div class="sec-head"><span class="num">▸</span><h2>Teslim paketi</h2></div>
+
+  <h3>Sonuç JSON'u</h3>
+  <p>Kılavuzun 3.2 bölümüne göre (Üniversite ve Üzeri formatı):</p>
+<pre><code>{
+  "team_name": "PatHUgen",
+  "team_id": "761197",
+  "application_id": "4882800",
+  "competition_level": "UNIVERSITE_VE_UZERI",
+  "predictions": [
+    {"id": "VAR_000001", "panel": "CFTR",
+     "predicted_class": "1", "predicted_prob": 0.87}
+  ]
+}</code></pre>
+  <p><code>predicted_class</code> <strong>string</strong> "0"/"1" (takımın nihai kararı, panelin eşiğiyle); <code>predicted_prob</code> patojenik sınıfın olasılığı (jürinin AUROC tarzı metrikleri için).</p>
+
+  <h3>Yazmadan önce doğrulama</h3>
+  <p><code>result_json.py → validate_result_json()</code> dosya diske yazılmadan <em>önce</em> şunları kontrol ediyor: üst düzey alanların dolu olması, panel adlarının geçerliliği, panel içinde <strong>id tekrarı olmaması</strong>, <code>predicted_class</code>'ın tam olarak "0"/"1" string'i olması, olasılıkların [0,1] aralığında ve NaN/Inf olmaması, ve panel başına <strong>girdi satır sayısı kadar</strong> tahmin bulunması. Bir sorun varsa <strong>hiçbir şey yazılmaz</strong> ve problemler tek tek listelenir.</p>
+
+  <h3>deliveryN/ klasörü</h3>
+<pre><code>delivery3/
+  TEAM_761197_FINAL3.json   <span class="c">← yüklenecek dosya</span>
+  README.md                 <span class="c">← komut, girdi yolları, sürümler, kütüphane sürümleri</span>
+  requirements.txt          <span class="c">← pip freeze ile sabitlenmiş tam sürümler</span>
+  code/                     <span class="c">← PatHUgen.py + bağımlılıkları</span>
+  model/&lt;PANEL&gt;/            <span class="c">← BU teslimde kullanılan tam model anlık görüntüsü</span></code></pre>
+
+  <div class="note">
+    <span class="tag">Zarif detay — bağımlılık kapanışı</span>
+    <p><code>code/</code> klasörüne kopyalanacak dosya listesi <strong>elle tutulmuyor</strong>. <code>delivery.py</code>, <code>PatHUgen.py</code>'den başlayarak <code>ast</code> ile import ifadelerini ayrıştırıp <em>geçişli olarak</em> tüm yerel bağımlılıkları buluyor — fonksiyon gövdesi içindeki import'lar dahil. Bir modül <em>paket</em> ise (<code>pathugen</code> gibi) altındaki tüm <code>.py</code> dosyaları dahil ediliyor. Ayrıca <code>ROOT / "&lt;isim&gt;.md|json"</code> kalıbı taranarak Python olmayan varlıklar (<code>champion_config.json</code>, <code>Delivery_Readme.md</code>) da bulunuyor.</p>
+    <p>Sonuç: kodun bağımlılıkları değiştiğinde liste kendiliğinden güncelleniyor, elle bakım gerektirmiyor. <code>PatHUgen.py</code> <code>run</code> komutunu da tanımladığı için <code>search/</code> paketi de kopyaya biniyor — sonucu üretmek için gerekli değil, ama "aynı dosya sonucu hem üretebiliyor hem sıfırdan yeniden türetebiliyor" demek jüriye karşı tartışmaktan kolay.</p>
+    <p>Yarışma test verisi teslim klasörüne <strong>asla</strong> kopyalanmıyor — kılavuz bunu açıkça yasaklıyor.</p>
+  </div>
+</section>
+
+<!-- ============================================ 15 -->
+<section id="s15">
+  <div class="sec-head"><span class="num">▸</span><h2>Sonuçlar</h2></div>
+
+  <p>Aşağıdaki sayılar <strong>referans hattının</strong> (1. kuşak, PDR'ye giren koşu) çıktısı: <code>outputs_colab/results_summary.csv</code>. Sunum destesi de bu koşuyu raporluyor. Sweep sonrası konfigürasyon farklı (GENEL'de CatBoost yerine XGBoost, farklı eşikler); <code>outputs_best/</code> klasörü git'e dahil değil, dolayısıyla sweep'in kendi tablosu şu anda repoda yok.</p>
+
+  <figure>
+    <div class="figbox">
+      <svg viewBox="0 0 760 300" width="100%" role="img" aria-label="Panel başına naif taban, dürüst iç içe F1 ve OOF F1 karşılaştırması">
+        <!-- gridlines -->
+        <g stroke="var(--rule)" stroke-width="1">
+          <line x1="70" y1="240" x2="730" y2="240"></line>
+          <line x1="70" y1="198" x2="730" y2="198"></line>
+          <line x1="70" y1="156" x2="730" y2="156"></line>
+          <line x1="70" y1="114" x2="730" y2="114"></line>
+          <line x1="70" y1="72"  x2="730" y2="72"></line>
+          <line x1="70" y1="30"  x2="730" y2="30"></line>
+        </g>
+        <g fill="var(--muted)" font-size="11" text-anchor="end">
+          <text x="60" y="244">0,75</text>
+          <text x="60" y="202">0,80</text>
+          <text x="60" y="160">0,85</text>
+          <text x="60" y="118">0,90</text>
+          <text x="60" y="76">0,95</text>
+          <text x="60" y="34">1,00</text>
+        </g>
+
+        <!-- GENEL -->
+        <rect x="95.5"  y="159.3" width="34" height="80.7"  fill="var(--tint)" stroke="var(--steel)" stroke-width="1"></rect>
+        <rect x="135.5" y="119.0" width="34" height="121.0" fill="var(--navy)"></rect>
+        <rect x="175.5" y="115.1" width="34" height="124.9" fill="var(--steel)" opacity="0.55"></rect>
+        <!-- KANSER -->
+        <rect x="260.5" y="183.6" width="34" height="56.4"  fill="var(--tint)" stroke="var(--steel)" stroke-width="1"></rect>
+        <rect x="300.5" y="101.7" width="34" height="138.3" fill="var(--navy)"></rect>
+        <rect x="340.5" y="86.6"  width="34" height="153.4" fill="var(--steel)" opacity="0.55"></rect>
+        <!-- PAH -->
+        <rect x="425.5" y="106.4" width="34" height="133.6" fill="var(--tint)" stroke="var(--steel)" stroke-width="1"></rect>
+        <rect x="465.5" y="92.7"  width="34" height="147.3" fill="var(--navy)"></rect>
+        <rect x="505.5" y="79.9"  width="34" height="160.1" fill="var(--steel)" opacity="0.55"></rect>
+        <!-- CFTR -->
+        <rect x="590.5" y="117.8" width="34" height="122.2" fill="var(--tint)" stroke="var(--steel)" stroke-width="1"></rect>
+        <rect x="630.5" y="86.4"  width="34" height="153.6" fill="var(--navy)"></rect>
+        <rect x="670.5" y="58.0"  width="34" height="182.0" fill="var(--steel)" opacity="0.55"></rect>
+
+        <line x1="70" y1="240" x2="730" y2="240" stroke="var(--ink)" stroke-width="1.5"></line>
+        <g fill="var(--ink)" font-size="12" font-weight="600" text-anchor="middle">
+          <text x="152.5" y="262">GENEL</text>
+          <text x="317.5" y="262">KANSER</text>
+          <text x="482.5" y="262">PAH</text>
+          <text x="647.5" y="262">CFTR</text>
+        </g>
+        <g fill="var(--muted)" font-size="10.5" text-anchor="middle">
+          <text x="152.5" y="280">n = 2.931</text>
+          <text x="317.5" y="280">n = 388</text>
+          <text x="482.5" y="280">n = 372</text>
+          <text x="647.5" y="280">n = 111</text>
+        </g>
+      </svg>
+      <div class="legend">
+        <span><i style="background:var(--tint);border:1px solid var(--steel)"></i>naif taban F1</span>
+        <span><i style="background:var(--navy)"></i>dürüst (iç içe) F1</span>
+        <span><i style="background:var(--steel);opacity:.55"></i>OOF F1 (iyimser)</span>
+      </div>
+    </div>
+    <figcaption>Y ekseni okunabilirlik için 0,75'ten başlıyor. Önemli olan çubukların yüksekliği değil, <strong>koyu çubuğun açık çubuktan ne kadar yukarıda olduğu</strong> — yani modelin naif tabana kazandırdığı fark.</figcaption>
+  </figure>
+
+  <div class="tw">
+  <table>
+    <caption>Referans hattının tam tablosu. Ortalama dürüst F1 = <strong>0,917</strong>. PDR bu koşuyla <strong>96,5</strong> aldı.</caption>
+    <thead><tr><th>Panel</th><th>Şampiyon</th><th class="num">Öz.</th><th class="num">Eşik</th><th class="num">OOF F1</th><th class="num">Dürüst F1</th><th class="num">Naif</th><th class="num">Kazanç</th><th class="num">Açık</th><th class="num">Dürüst AUC</th></tr></thead>
+    <tbody>
+      <tr><td class="panel-tag">GENEL</td><td class="mono">catboost</td><td class="num">52</td><td class="num">0,280</td><td class="num">0,8987</td><td class="num">0,8940</td><td class="num">0,8461</td><td class="num">+0,048</td><td class="num">0,005</td><td class="num">0,851</td></tr>
+      <tr><td class="panel-tag">KANSER</td><td class="mono">xgboost</td><td class="num">35</td><td class="num">0,515</td><td class="num">0,9326</td><td class="num">0,9146</td><td class="num">0,8171</td><td class="num">+0,098</td><td class="num">0,018</td><td class="num">0,924</td></tr>
+      <tr><td class="panel-tag">PAH</td><td class="mono">xgboost</td><td class="num">37</td><td class="num">0,280</td><td class="num">0,9406</td><td class="num">0,9254</td><td class="num">0,9091</td><td class="num">+0,016</td><td class="num">0,015</td><td class="num">0,795</td></tr>
+      <tr><td class="panel-tag">CFTR</td><td class="mono">xgboost</td><td class="num">13</td><td class="num">0,810</td><td class="num">0,9667</td><td class="num">0,9329</td><td class="num">0,8955</td><td class="num">+0,037</td><td class="num">0,034</td><td class="num">0,948</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="note warn">
+    <span class="tag">Tablodaki en dürüst satır</span>
+    <p><strong>PAH, en yüksek F1'e sahip panel ve aynı zamanda projenin en zayıf paneli.</strong> Dürüst AUC yalnızca 0,795, dengeli F1 0,735 ve naif tabana kazanç sadece +0,016. F1'in yüksek görünmesinin sebebi modelin iyiliği değil, panelin %83 pozitif olması. Sıralama kalitesi (AUC) hâlâ asıl darboğaz — ve proje bunu saklamak yerine sunumda ayrı bir sayfaya koymuş.</p>
+  </div>
+
+  <h3>Paneller arasında ne ortak</h3>
+  <p>Dört panelin seçtiği toplam 123 öznitelik arasında <strong>üç veya daha fazla panelde ortak olan sadece dört tane</strong> var: <code>AL_7</code>, <code>AL_26</code>, <code>ek_max</code>, <code>al_n_ultrarare</code>. Paneller biyolojik olarak o kadar farklı ki neredeyse hiçbir şey genelleşmiyor — dört bağımsız model kararının en güçlü ampirik gerekçesi bu.</p>
+
+  <p>Gecikme (rapordan): toplu çıkarım <strong>0,23 ms/varyant</strong>, tek varyant uçtan uca 65–124 ms.</p>
+</section>
+
+<!-- ============================================ 16 -->
+<section id="s16">
+  <div class="sec-head"><span class="num">!</span><h2>Riskler ve tuzaklar</h2></div>
+
+  <p class="lede">Kodu okurken bulduğum, teslimden önce bilinmesi gereken noktalar. İlk ikisi bu oturumda ham veriyle ölçülerek doğrulandı.</p>
+
+  <h3>1 · İkili AL kolonu tespiti veriye bağlı — eğitim/servis sapması riski</h3>
+  <p><code>_binary_al_columns(df)</code>, bir AL kolonunun "ikili" olup olmadığına <strong>o anki DataFrame'e bakarak</strong> karar veriyor: boş olmayan değerleri {0,1} alt kümesi mi? Bu, örneklem büyüklüğüne duyarlı — küçük bir veri setinde sürekli bir kolon tesadüfen sadece 0 ve 1 değerleri gösterebilir.</p>
+  <p>Panellerin kendi eğitim verilerinde bile bu sayı çok oynuyor:</p>
+  <div class="tw">
+  <table>
+    <caption>Aynı 334 AL kolonu, farklı panellerde farklı sınıflandırılıyor. Bu oturumda ham CSV'lerden sayıldı.</caption>
+    <thead><tr><th>Panel</th><th class="num">İkili</th><th class="num">Sürekli</th><th>GENEL'e göre fark</th></tr></thead>
+    <tbody>
+      <tr><td class="panel-tag">GENEL</td><td class="num">103</td><td class="num">231</td><td>—</td></tr>
+      <tr><td class="panel-tag">KANSER</td><td class="num">157</td><td class="num">177</td><td>55 kolon fazladan ikili sayılıyor</td></tr>
+      <tr><td class="panel-tag">PAH</td><td class="num">109</td><td class="num">225</td><td>30 fazladan / 24 eksik</td></tr>
+      <tr><td class="panel-tag">CFTR</td><td class="num">161</td><td class="num">173</td><td>62 kolon fazladan ikili sayılıyor</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>İki somut sonucu var:</p>
+  <ul class="body">
+    <li><strong>Tahmin anında:</strong> test CSV'si kendi ikili kümesini üretir. <code>n_tools_available</code> (GENEL'in listesinde), <code>damaging_vote_count</code> (KANSER), <code>votes_x_grantham</code> (PAH), <code>al_cont_mean</code> / <code>al_n_ultrarare</code> (CFTR) — aynı isim, farklı anlam. Test seti küçükse sapma büyür.</li>
+    <li><strong>Artırım içinde:</strong> <code>build_aug_pool</code>, ödünç GENEL satırlarının özniteliklerini <em>ayrı bir <code>build_features</code> çağrısında</em> üretiyor. Yani CFTR eğitiminde panelin kendi satırları 161 "araç" üzerinden, ödünç satırlar ~103 araç üzerinden sayılmış oy istatistikleri taşıyor — tek matriste, aynı kolon adı altında.</li>
+  </ul>
+  <p>Doğru çözüm: ikili kolon listesini de <code>cat_maps</code> gibi eğitim anında dondurup model paketine kaydetmek. <em>Şu an repoda hiçbir şeyi değiştirmedim</em> — bu bir gözlem.</p>
+
+  <h3>2 · <code>aug_frac</code> kısmi değerleri sessizce yok sayılıyor</h3>
+  <p>Bölüm 05'te ayrıntılı. Bugün aktif bir hata değil (konfigürasyonlar 0,0 ve 1,0), gelecekte olabilir.</p>
+
+  <h3>3 · Dürüst skorlardaki hiperparametre iyimserliği</h3>
+  <p><code>WARNING.md</code>'de kayıtlı, bölüm 10'da anlatıldı. Rapor yazılırken "sızıntısız dürüst F1" ifadesi <strong>bu kayıt belirtilmeden</strong> kullanılmamalı.</p>
+
+  <h3>4 · BLOSUM45/80 sessiz geri düşüşü</h3>
+  <p>Biopython yoksa üçü de BLOSUM62 olur. Eğitim ve teslim ortamı aynı olmalı.</p>
+
+  <h3>5 · Repoda şu an eksik olanlar</h3>
+  <ul class="body">
+    <li><code>pathugen_model/</code> <strong>yok</strong> → teslimden önce mutlaka <code>train</code> çalıştırılmalı.</li>
+    <li><code>outputs_best/</code> <strong>yok</strong> (gitignore'da) → sweep'in gerekçe dosyası <code>BEST_CONFIG.md</code> şu anda okunamıyor; <code>champion_config.json</code> ondan arta kalan tek çıktı.</li>
+    <li><code>.venv/</code> <strong>yok</strong> → dokümanlardaki <code>.venv/bin/python</code> komutları bu makinede olduğu gibi çalışmaz; sanal ortam yeniden kurulmalı.</li>
+  </ul>
+
+  <h3>6 · Kimlik alanları doğrulanmalı</h3>
+  <p><code>pathugen/config.py</code>'deki <code>TEAM_ID = "761197"</code>, <code>APPLICATION_ID = "4882800"</code> PSR kapağından geliyor. İlk gerçek yüklemeden önce KYS kaydıyla birebir eşleştiği doğrulanmalı (ortam değişkeniyle de geçilebilir).</p>
+</section>
+
+<!-- ============================================ 17 -->
+<section id="s17">
+  <div class="sec-head"><span class="num">▸</span><h2>Atıl klasörler — PatHUgen ile çelişenler</h2></div>
+
+  <p>Repoda, <code>PatHUgen.py</code>'den <em>önceki</em> kuşaklardan kalan ve artık çalıştırılmayan bir bölüm var. Karıştırmamak için:</p>
+
+  <div class="tw">
+  <table>
+    <caption>Bunlar bozuk değil, sadece aşılmış. <code>PatHUgen.py</code> hiçbirini import etmiyor.</caption>
+    <thead><tr><th>Yol</th><th>Ne olduğu</th><th>Durum</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">src/ + train/</td><td>İlk modüler hat (Colab öncesi): <code>run_baseline</code>, <code>run_optuna</code>, <code>run_stacking</code>, <code>finalize_champions</code></td><td>Aşılmış. <code>search/</code> bunun yerini aldı.</td></tr>
+      <tr><td class="mono">main.py, predict.py</td><td>O hattın giriş noktaları</td><td>Aşılmış.</td></tr>
+      <tr><td class="mono">CLAUDE.md (kök)</td><td><strong>Hâlâ <code>src/</code>+<code>train/</code> hattını anlatıyor</strong></td><td>Güncel değil. Bugünün gerçeği <code>PatHUgen_Explanation.md</code> ve <code>HOW_TO_RUN.md</code>.</td></tr>
+      <tr><td class="mono">eda/, Orange-Data-Mining/</td><td>Keşif çalışması; öznitelik tasarımının arkasındaki analiz</td><td>Tarihsel kayıt, çalıştırılmıyor.</td></tr>
+      <tr><td class="mono">analysis/</td><td>PSR'deki sayıları üreten betikler</td><td>Geçerli, ama bazıları başka makinenin mutlak yollarını içeriyor.</td></tr>
+      <tr><td class="mono">report_build/, sunum/</td><td>PSR raporu ve sunum destesi üreticileri</td><td>Geçerli, modelle ilgisiz.</td></tr>
+      <tr><td class="mono">TEKNOFEST_pipeline_colab.ipynb</td><td><code>search/reference/</code>'ın türetildiği orijinal Colab defteri</td><td>Tarihsel kayıt.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <p><strong>Bugün geçerli olan dosyalar:</strong> <code>PatHUgen.py</code>, <code>pathugen/</code>, <code>champion_config.json</code>, <code>Delivery_Readme.md</code>, ve arama için <code>search/</code>. Dokümantasyon: <code>PatHUgen_Explanation.md</code> (mimari), <code>HOW_TO_RUN.md</code> (operasyon), <code>Champion_Config.md</code> (konfigürasyon), <code>RUNNERS.md</code> (arama hatları), <code>WARNING.md</code> (bilinen kısıt).</p>
+</section>
+
+<p class="endnote">Bu belge, repo <code>explore/orange-feature-ranking-analysis</code> dalında (<code>41365fa</code>) uçtan uca okunarak yazıldı. Satır sayıları, sınıf dengeleri, panel kesişimleri, artırım havuzu büyüklükleri, efektif sınıf ağırlıkları ve ikili AL kolonu sayımları ham CSV'lerden yeniden hesaplandı; model performans sayıları <code>outputs_colab.zip → results_summary.csv</code> ve <code>report_figs/repro_metrics.json</code> dosyalarından alındı. Repoda hiçbir dosya değiştirilmedi.</p>
+
+</main>
+</div>
+</div>
+</body>
+</html>
