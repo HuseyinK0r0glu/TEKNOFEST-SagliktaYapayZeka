@@ -1,0 +1,600 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>PatHUgen — TEKNOFEST 2026 Sağlıkta Yapay Zekâ Afişi</title>
+<link rel="stylesheet" href="poster.css">
+</head>
+<body>
+
+<!-- ======================= MASTHEAD ======================= -->
+<header class="masthead">
+  <div class="masthead__bg"></div>
+  <div class="masthead__veil"></div>
+
+  <div class="masthead__inner">
+    <div>
+      <p class="eyebrow">TEKNOFEST 2026 · Güneydoğu Sağlıkta Yapay Zekâ Yarışması · Üniversite ve Üzeri</p>
+      <h1 class="wordmark">PatH<b>U</b>gen</h1>
+      <p class="tagline">
+        Missense genetik varyantlarda <strong>patojenik / benign</strong> sınıflandırma —
+        dört panel, dört bağımsız karar paketi, sızıntısız doğrulama.
+      </p>
+      <p class="byline">
+        <b>Hasan Can Zorlu</b><span class="sep">·</span><b>Mehmed Akif Arslan</b><span class="sep">·</span><b>Hüseyin Köroğlu</b><span class="sep">·</span><b>Fikret Karakuzu</b><span class="sep">·</span><b>Efe Gürdamar</b>
+        <span class="sep">|</span> Danışman: <b>Assoc. Prof. Hacer Yalım Keleş</b>
+        <span class="sep">|</span> Bilgisayar Mühendisliği, Hacettepe Üniversitesi
+      </p>
+    </div>
+
+    <div class="masthead__logos">
+      <img class="logo-tuseb" src="assets/tuseb-white.png" alt="TÜSEB — Türkiye Sağlık Enstitüleri Başkanlığı">
+      <img class="logo-teknofest" src="assets/teknofest.png" alt="TEKNOFEST">
+    </div>
+  </div>
+
+  <div class="idstrip">
+    <span>TAKIM ID <b>761197</b></span>
+    <span>BAŞVURU ID <b>4882800</b></span>
+    <span>4 PANEL · <b>3.802</b> VARYANT · 353 KOLON</span>
+    <span>DEĞERLENDİRME: PANEL BAŞINA <b>F1 &amp; MCC</b> ORTALAMASI</span>
+    <span>SEED <b>42</b> · DIŞ VERİ KAYNAĞI <b>YOK</b></span>
+  </div>
+</header>
+
+<main>
+
+  <!-- ======================= HERO ======================= -->
+  <section class="row">
+    <div class="c12 hero">
+      <p class="hero__claim">
+        Dürüst çapraz doğrulamada panel ortalaması <span class="hl">0,92 F1</span> —
+        ama asıl kanıt bu değil: naif taban modelin MCC'si <b>0,00</b> iken bizimki
+        <span class="hl">0,56 – 0,79</span>. Model gerçekten ayrım öğreniyor.
+      </p>
+
+      <div class="statgrid">
+        <article class="stat">
+          <p class="stat__panel">GENEL</p>
+          <strong class="stat__val">0,876</strong>
+          <p class="stat__unit">DÜRÜST F1</p>
+          <p class="stat__meta">±0,008 · AUC 0,859<br>n = 2.931 · 38 öznitelik</p>
+        </article>
+        <article class="stat">
+          <p class="stat__panel">KANSER</p>
+          <strong class="stat__val">0,924</strong>
+          <p class="stat__unit">DÜRÜST F1</p>
+          <p class="stat__meta">±0,030 · AUC 0,947<br>n = 388 · 35 öznitelik</p>
+        </article>
+        <article class="stat">
+          <p class="stat__panel">PAH</p>
+          <strong class="stat__val">0,938</strong>
+          <p class="stat__unit">DÜRÜST F1</p>
+          <p class="stat__meta">±0,015 · AUC 0,847<br>n = 372 · 37 öznitelik</p>
+        </article>
+        <article class="stat">
+          <p class="stat__panel">CFTR</p>
+          <strong class="stat__val">0,952</strong>
+          <p class="stat__unit">DÜRÜST F1</p>
+          <p class="stat__meta">±0,029 · AUC 0,976<br>n = 111 · 13 öznitelik</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================== 01 PROBLEM · 02 YÖNTEM ================== -->
+  <section class="row">
+
+    <article class="card c5">
+      <div class="sechead">
+        <span class="sechead__no">01</span>
+        <span class="sechead__label">Problem</span>
+        <span class="sechead__rule"></span>
+      </div>
+      <h2 class="sectitle">Darboğaz sekanslama değil, <em>yorumlama</em>.</h2>
+
+      <div class="flow">
+        <div class="flow__step"><h4>SEKANSLAMA</h4><p>panel / ekzom</p></div>
+        <span class="flow__arrow">›</span>
+        <div class="flow__step"><h4>ANOTASYON</h4><p>frekans · korunmuşluk</p></div>
+        <span class="flow__arrow">›</span>
+        <div class="flow__step flow__step--alert"><h4>YORUMLAMA</h4><p>▲ darboğaz · elle</p></div>
+        <span class="flow__arrow">›</span>
+        <div class="flow__step"><h4>RAPOR</h4><p>klinik karar</p></div>
+      </div>
+
+      <ul class="facts">
+        <li>Nadir hastalıklı bir birey doğru tanıya ulaşana kadar ortalama <b>8 uzman hekimden</b>
+            geçiyor; süre <b>~7 yıl</b>.</li>
+        <li>Görev: ACMG/AMP çerçevesinde <b>Patojenik / Benign</b> ikili sınıflandırma,
+            panel başına ayrı karar eşiği.</li>
+        <li><span class="warn">Verideki tuzak:</span> patojenik sınıf çoğunlukta (PAH'ta %83).
+            Hiçbir şey öğrenmeyen naif bir model bile <b>0,85–0,91 F1</b> alır — naif taban
+            çizgisi bu yüzden her tablomuzda yanımızda durur.</li>
+      </ul>
+    </article>
+
+    <article class="card c7">
+      <div class="sechead">
+        <span class="sechead__no">02</span>
+        <span class="sechead__label">Yöntem</span>
+        <span class="sechead__rule"></span>
+      </div>
+      <h2 class="sectitle">İki hat var; ikisini bağlayan tek bir tarife.</h2>
+      <p class="lead">Kazanan tarifi <em>bulmak</em> saatler sürer, <em>çalıştırmak</em> saniyeler.
+        Tarif koda gömülü bir sayı değil; ayrı bir yapılandırma dosyasında durur ve bir insan onaylamadan değişmez.</p>
+
+      <ul class="facts">
+        <li><b>Ne denenir?</b> XGBoost, LightGBM, CatBoost, ExtraTrees, L1-LogReg ve izotonik
+            kalibrasyonlu stacking; Optuna hedefi ROC-AUC.</li>
+        <li><b>Kim kazanır?</b> <em>One-SE</em> kuralı ayırt edilemeyen adaylar arasından en yalınını
+            seçer — dört panelde de şampiyon <b>tek bir XGBoost</b>.
+            <span class="good">Teslim edilen sistemde stack yok.</span></li>
+        <li><b>Sapma neden imkânsız?</b> Eğitim ve tahmin aynı öznitelik dönüşümünü çağırır;
+            kategorik sözlük eğitimde kaydedilir, tahminde aynen kullanılır.</li>
+      </ul>
+
+      <div class="lanes">
+        <div class="lane lane--search">
+          <b>ARAMA HATTI · saatler</b>
+Yüzlerce kombinasyon · 5 model ailesi · panel başına bağımsız Optuna araması.
+        </div>
+        <div class="lane lane--deliver">
+          <b>TESLİM HATTI · saniyeler</b>
+Yalnızca kazanan tarifi okur ve çalıştırır · ~1 MB paket · GPU yok, dış çağrı yok.
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <!-- ======================= BORU HATTI ======================= -->
+  <section class="row">
+    <article class="card c12">
+      <div class="sechead">
+        <span class="sechead__no">03</span>
+        <span class="sechead__label">Yedi adım · veriden kalibre olasılığa</span>
+        <span class="sechead__rule"></span>
+      </div>
+
+      <div class="pipe">
+        <div class="pipe__step">
+          <span class="pipe__n">1</span><h4>VERİ</h4>
+          <p>4 panel · <span class="mono">3.802</span> varyant<br>353 kolon</p>
+        </div>
+        <span class="pipe__link"></span>
+        <div class="pipe__step">
+          <span class="pipe__n">2</span><h4>ÖZNİTELİK</h4>
+          <p>durumsuz dönüşüm<br><span class="mono">351 → 442</span> kolon</p>
+        </div>
+        <span class="pipe__link"></span>
+        <div class="pipe__step">
+          <span class="pipe__n">3</span><h4>SEÇİM</h4>
+          <p>null-importance (± ReliefF)<br><span class="mono">441 → 13–38</span></p>
+        </div>
+        <span class="pipe__link"></span>
+        <div class="pipe__step pipe__step--aug">
+          <span class="pipe__n">4</span><h4>ARTIRIM</h4>
+          <p>yalnız PAH / CFTR<br>yalnız eğitim katı</p>
+        </div>
+        <span class="pipe__link"></span>
+        <div class="pipe__step">
+          <span class="pipe__n">5</span><h4>MODEL</h4>
+          <p>XGBoost × 3 seed<br>panel başına ayrı tarif</p>
+        </div>
+        <span class="pipe__link"></span>
+        <div class="pipe__step">
+          <span class="pipe__n">6</span><h4>EŞİK</h4>
+          <p>donmuş karar noktası<br><span class="mono">0,595 – 0,780</span></p>
+        </div>
+        <span class="pipe__link"></span>
+        <div class="pipe__step pipe__step--out">
+          <span class="pipe__n">7</span><h4>ÇIKTI</h4>
+          <p>kalibre olasılık<br>patojenik / benign</p>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <!-- ============ 04 ÖZNİTELİK · 05 SEÇİM · 06 ARTIRIM ============ -->
+  <section class="row">
+
+    <article class="card c4">
+      <div class="sechead">
+        <span class="sechead__no">04</span>
+        <span class="sechead__label">Öznitelik mühendisliği</span>
+        <span class="sechead__rule"></span>
+      </div>
+      <h3 class="sectitle" style="font-size:25pt">351 ham kolon → 442 kolonluk temsil</h3>
+      <p class="lead" style="font-size:19pt">91 türetilmiş öznitelik, altı aile — hepsi etiketten bağımsız.</p>
+
+      <figure class="fig" style="margin:0 0 4mm">
+        <svg viewBox="0 0 620 224" role="img" aria-label="Türetilmiş öznitelik aileleri: amino asit biyokimyası 46, sürekli AL agregatları 15, eksiklik meta-öznitelikleri 12, in-siliko oy uzlaşısı 7, etkileşim çaprazları 6, EK korunmuşluk agregatları 5.">
+          <g font-family="Lato" font-size="17" fill="#BAD2E9">
+            <text x="0" y="18">Amino asit biyokimyası</text>
+            <text x="0" y="53">Sürekli AL agregatları</text>
+            <text x="0" y="88">Eksiklik meta-öznitelikleri</text>
+            <text x="0" y="123">In-siliko oy uzlaşısı</text>
+            <text x="0" y="158">Etkileşim çaprazları</text>
+            <text x="0" y="193">EK korunmuşluk agregatları</text>
+          </g>
+          <g fill="#58C5F2">
+            <rect x="310" y="2"   width="270"  height="21" rx="4"/>
+            <rect x="310" y="37"  width="88.0" height="21" rx="4"/>
+            <rect x="310" y="72"  width="70.4" height="21" rx="4"/>
+            <rect x="310" y="107" width="41.1" height="21" rx="4"/>
+            <rect x="310" y="142" width="35.2" height="21" rx="4"/>
+            <rect x="310" y="177" width="29.3" height="21" rx="4"/>
+          </g>
+          <g font-family="Aptos Mono, DejaVu Sans Mono, monospace" font-size="18" font-weight="700" fill="#EFF6FD">
+            <text x="572" y="18" text-anchor="end" fill="#04101F">46</text>
+            <text x="408" y="53">15</text>
+            <text x="390" y="88">12</text>
+            <text x="361" y="123">7</text>
+            <text x="355" y="158">6</text>
+            <text x="349" y="193">5</text>
+          </g>
+          <text x="310" y="218" font-family="Lato" font-size="14" fill="#8BAACA">öznitelik sayısı · toplam 91</text>
+        </svg>
+      </figure>
+
+      <ul class="facts">
+        <li><b>46 öznitelik</b> amino asit değişiminin biyolojik şiddetini taşır: BLOSUM62/45/80,
+            Grantham uzaklığı, 9 fizikokimyasal ölçek.</li>
+        <li>Ham allel frekansları <span class="mono">10⁻³ – 2,6×10⁵</span> aralığında; <b>log ölçeğe</b> alınır.</li>
+        <li><span class="warn">Eksiklik çift tepeli:</span> bir yanda yoğun anote edilmiş, diğer yanda
+            iskelet varyantlar. Gürültü değil, bir <b>imza</b> — öznitelik olarak kodlanır.</li>
+      </ul>
+    </article>
+
+    <article class="card c4">
+      <div class="sechead">
+        <span class="sechead__no">05</span>
+        <span class="sechead__label">Öznitelik seçimi</span>
+        <span class="sechead__rule"></span>
+      </div>
+      <h3 class="sectitle" style="font-size:25pt">Şansa karşı duramayan öznitelik modele giremez.</h3>
+      <p class="lead" style="font-size:19pt">441 aday, iki bağımsız istatistiksel filtre, panel başına 13–38 kolon.</p>
+
+      <table class="dark">
+        <thead>
+          <tr><th>Panel</th><th>Seçim yöntemi</th><th>Kalan</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>GENEL</td><td style="text-align:right">Hibrit (ReliefF-kapılı)</td><td>38</td></tr>
+          <tr><td>KANSER</td><td style="text-align:right">Null-importance</td><td>35</td></tr>
+          <tr><td>PAH</td><td style="text-align:right">Null-importance</td><td>37</td></tr>
+          <tr><td>CFTR</td><td style="text-align:right">Null-importance</td><td>13</td></tr>
+        </tbody>
+      </table>
+
+      <ul class="facts">
+        <li><b>Filtre 1 · Null-importance.</b> Etiket permüte edilir, önem yeniden ölçülür; şans
+            dağılımını geçemeyen elenir. Üç panelde tek başına yeterli.</li>
+        <li><b>Filtre 2 · ReliefF.</b> En yakın komşular üzerinden yerel ayrımı ölçer — global
+            testin kaçırdığı sinyali yakalar.</li>
+        <li><b>Hibrit kapı.</b> Yalnızca GENEL'de: bir öznitelik iki testten <em>birden</em> geçerse
+            kalır — en büyük ve en heterojen panel için ek güvence.</li>
+        <li><span class="good">Sonuç:</span> modele giren her kolon, şansa karşı ayakta kalabildiğini
+            <b>kanıtlamış</b> durumdadır — 441 adaydan panel başına 13–38'i.</li>
+      </ul>
+    </article>
+
+    <article class="card c4">
+      <div class="sechead">
+        <span class="sechead__no">06</span>
+        <span class="sechead__label">Cross-panel augmentation</span>
+        <span class="sechead__rule"></span>
+      </div>
+      <h3 class="sectitle" style="font-size:25pt">Dış veri yoksa: sızıntısız ödünç satır.</h3>
+      <p class="lead" style="font-size:19pt">GENEL'den, hedef panelde <em>hiç görünmeyen</em> varyantlar yalnızca eğitim
+        katına eklenir. SMOTE değil: 442 boyutlu, %55 eksik bir uzayda sentetik profiller var olamaz.</p>
+
+      <table class="dark">
+        <thead>
+          <tr><th>Panel</th><th>Panel satırı</th><th>+ Ödünç</th><th>Oran</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>GENEL</td><td>2.931</td><td class="zero">—</td><td class="zero">0,00</td></tr>
+          <tr><td>KANSER</td><td>388</td><td class="zero">—</td><td class="zero">0,00</td></tr>
+          <tr><td>PAH</td><td>372</td><td class="tp">+2.676</td><td>1,00</td></tr>
+          <tr><td>CFTR</td><td>111</td><td class="tp">+2.854</td><td>1,00</td></tr>
+        </tbody>
+      </table>
+
+      <div class="delta">
+        <div class="delta__side delta__off"><em>artırım kapalı</em><strong>0,500</strong></div>
+        <span class="delta__arrow">→</span>
+        <div class="delta__side delta__on"><em>artırım açık</em><strong>0,976</strong></div>
+        <p class="delta__cap">CFTR ROC-AUC. 21 satırla ayrım öğrenilemiyor — artırım burada bir
+          iyileştirme değil, <b>ön koşul</b>.</p>
+      </div>
+
+      <ul class="facts">
+        <li><b>Neden sızıntı değil?</b> Ödünç satırlar tanım gereği hedef panelde yok; doğrulama
+            her katta yalnızca panelin kendi satırlarıyla yapılır.</li>
+        <li><b>Meşruiyet:</b> paneller arasında ortak <b>578 varyantta etiketler %100 uyumlu</b>
+            (GENEL∩PAH = 255, GENEL∩CFTR = 77).</li>
+        <li><span class="warn">KANSER dışarıda:</span> denendi, çok-seed bağımsız kontrolde kaybetti.
+            Kural net — kazanırsa girer, kaybederse girmez.</li>
+      </ul>
+    </article>
+  </section>
+
+  <!-- ======================= SONUÇ LEVHASI ======================= -->
+  <section class="row">
+    <article class="slab">
+      <div class="sechead">
+        <span class="sechead__no">07</span>
+        <span class="sechead__label">Sonuçlar</span>
+        <span class="sechead__rule"></span>
+      </div>
+      <h2 class="sectitle">Dürüst ölçüm, hiçbir ayarın bakmadığı sayıdadır.</h2>
+      <p class="lead">5 dış kat × 3 tekrar. Öznitelik listesi, hiperparametreler ve karar eşiği önceden kilitli —
+        tek soru şu: modelin hiç görmediği satırlarda ne aldığı.</p>
+
+      <div class="slab__grid">
+
+        <table class="res">
+          <thead>
+            <tr><th>Metrik</th><th>GENEL</th><th>KANSER</th><th>PAH</th><th>CFTR</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Varyant sayısı</td><td>2.931</td><td>388</td><td>372</td><td>111</td></tr>
+            <tr><td>Seçilen öznitelik</td><td>38</td><td>35</td><td>37</td><td>13</td></tr>
+            <tr class="key"><td>Dürüst F1 · 5×3 CV</td><td>0,876</td><td>0,924</td><td>0,938</td><td>0,952</td></tr>
+            <tr><td>Naif taban F1</td><td>0,846</td><td>0,817</td><td>0,909</td><td>0,896</td></tr>
+            <tr><td>Dürüst ROC-AUC</td><td>0,859</td><td>0,947</td><td>0,847</td><td>0,976</td></tr>
+            <tr class="key"><td>MCC · naif taban 0,00</td><td>0,56</td><td>0,79</td><td>0,58</td><td>0,77</td></tr>
+            <tr><td>Dengeli doğruluk · naif 0,50</td><td>0,79</td><td>0,89</td><td>0,72</td><td>0,90</td></tr>
+            <tr><td>Doğruluk</td><td>%82,1</td><td>%91,0</td><td>%89,8</td><td>%92,8</td></tr>
+            <tr><td>Duyarlılık / Özgüllük</td><td>0,86 / 0,71</td><td>0,94 / 0,85</td><td>0,99 / 0,45</td><td>0,94 / 0,86</td></tr>
+            <tr><td>Donmuş karar eşiği</td><td>0,670</td><td>0,705</td><td>0,595</td><td>0,780</td></tr>
+          </tbody>
+        </table>
+
+        <div class="figs">
+
+          <figure class="fig" style="margin:0">
+            <p class="fig__cap">Şekil 1 — Dürüst F1, naif tabana karşı.
+              <span>Naif taban zaten yüksek; kazanç birkaç puandır ve bunu saklamıyoruz.</span></p>
+            <svg viewBox="0 0 1000 400" role="img" aria-label="Panel başına naif taban F1 ve PatHUgen dürüst F1 değerlerinin karşılaştırması.">
+              <!-- ızgara -->
+              <g stroke="#CBDBEC" stroke-width="1.5">
+                <line x1="175" y1="60" x2="175" y2="348"/>
+                <line x1="330" y1="60" x2="330" y2="348"/>
+                <line x1="485" y1="60" x2="485" y2="348"/>
+                <line x1="640" y1="60" x2="640" y2="348"/>
+                <line x1="795" y1="60" x2="795" y2="348"/>
+                <line x1="950" y1="60" x2="950" y2="348"/>
+              </g>
+              <!-- gösterge -->
+              <g font-family="Lato" font-size="20" fill="#47617E">
+                <circle cx="182" cy="26" r="11" fill="#eb6834"/>
+                <text x="202" y="33">Naif taban F1</text>
+                <circle cx="392" cy="26" r="11" fill="#2a78d6"/>
+                <text x="412" y="33" font-weight="700" fill="#0A1C33">PatHUgen dürüst F1</text>
+              </g>
+              <!-- satırlar -->
+              <g font-family="Lato" font-size="22" font-weight="700" fill="#0A1C33">
+                <text x="150" y="112" text-anchor="end">GENEL</text>
+                <text x="150" y="185" text-anchor="end">KANSER</text>
+                <text x="150" y="258" text-anchor="end">PAH</text>
+                <text x="150" y="331" text-anchor="end">CFTR</text>
+              </g>
+              <g stroke="#9FB6CE" stroke-width="5" stroke-linecap="round">
+                <line x1="472.6" y1="105" x2="565.6" y2="105"/>
+                <line x1="382.7" y1="178" x2="714.4" y2="178"/>
+                <line x1="667.9" y1="251" x2="757.8" y2="251"/>
+                <line x1="627.6" y1="324" x2="801.2" y2="324"/>
+              </g>
+              <g fill="#eb6834">
+                <circle cx="472.6" cy="105" r="12"/><circle cx="382.7" cy="178" r="12"/>
+                <circle cx="667.9" cy="251" r="12"/><circle cx="627.6" cy="324" r="12"/>
+              </g>
+              <g fill="#2a78d6">
+                <circle cx="565.6" cy="105" r="13"/><circle cx="714.4" cy="178" r="13"/>
+                <circle cx="757.8" cy="251" r="13"/><circle cx="801.2" cy="324" r="13"/>
+              </g>
+              <g font-family="Aptos Mono, DejaVu Sans Mono, monospace" font-size="20" fill="#47617E" text-anchor="end">
+                <text x="452" y="112">0,846</text><text x="362" y="185">0,817</text>
+                <text x="647" y="258">0,909</text><text x="607" y="331">0,896</text>
+              </g>
+              <g font-family="Aptos Mono, DejaVu Sans Mono, monospace" font-size="22" font-weight="700" fill="#2a78d6">
+                <text x="586" y="112">0,876</text><text x="735" y="185">0,924</text>
+                <text x="778" y="258">0,938</text><text x="822" y="331">0,952</text>
+              </g>
+              <g font-family="Aptos Mono, DejaVu Sans Mono, monospace" font-size="18" fill="#47617E" text-anchor="middle">
+                <text x="175" y="376">0,75</text><text x="330" y="376">0,80</text><text x="485" y="376">0,85</text>
+                <text x="640" y="376">0,90</text><text x="795" y="376">0,95</text><text x="950" y="376">1,00</text>
+              </g>
+            </svg>
+          </figure>
+
+          <figure class="fig" style="margin:0">
+            <p class="fig__cap">Şekil 2 — Matthews korelasyon katsayısı (MCC).
+              <span>Naif tabanın MCC'si tam olarak 0,00 — gerçek katkı burada görünür.</span></p>
+            <svg viewBox="0 0 1000 400" role="img" aria-label="Panel başına MCC değerleri; naif taban 0,00.">
+              <g stroke="#CBDBEC" stroke-width="1.5">
+                <line x1="330" y1="60" x2="330" y2="348"/>
+                <line x1="485" y1="60" x2="485" y2="348"/>
+                <line x1="640" y1="60" x2="640" y2="348"/>
+                <line x1="795" y1="60" x2="795" y2="348"/>
+                <line x1="950" y1="60" x2="950" y2="348"/>
+              </g>
+              <line x1="175" y1="56" x2="175" y2="352" stroke="#eb6834" stroke-width="3.5"/>
+              <text x="185" y="42" font-family="Lato" font-size="19" font-weight="700" fill="#C24A18">naif taban = 0,00</text>
+              <g font-family="Lato" font-size="22" font-weight="700" fill="#0A1C33">
+                <text x="150" y="112" text-anchor="end">GENEL</text>
+                <text x="150" y="185" text-anchor="end">KANSER</text>
+                <text x="150" y="258" text-anchor="end">PAH</text>
+                <text x="150" y="331" text-anchor="end">CFTR</text>
+              </g>
+              <g fill="#2a78d6">
+                <path d="M175 88 H602 a7 7 0 0 1 7 7 v20 a7 7 0 0 1 -7 7 H175 Z"/>
+                <path d="M175 161 H780.25 a7 7 0 0 1 7 7 v20 a7 7 0 0 1 -7 7 H175 Z"/>
+                <path d="M175 234 H617.5 a7 7 0 0 1 7 7 v20 a7 7 0 0 1 -7 7 H175 Z"/>
+                <path d="M175 307 H764.75 a7 7 0 0 1 7 7 v20 a7 7 0 0 1 -7 7 H175 Z"/>
+              </g>
+              <g font-family="Aptos Mono, DejaVu Sans Mono, monospace" font-size="22" font-weight="700" fill="#0A1C33">
+                <text x="627" y="113">0,56</text><text x="805" y="186">0,79</text>
+                <text x="643" y="259">0,58</text><text x="790" y="332">0,77</text>
+              </g>
+              <g font-family="Aptos Mono, DejaVu Sans Mono, monospace" font-size="18" fill="#47617E" text-anchor="middle">
+                <text x="175" y="376">0,0</text><text x="330" y="376">0,2</text><text x="485" y="376">0,4</text>
+                <text x="640" y="376">0,6</text><text x="795" y="376">0,8</text><text x="950" y="376">1,0</text>
+              </g>
+            </svg>
+          </figure>
+
+        </div>
+      </div>
+
+      <div class="slab__note">
+        <p><b>Protokol</b>Tekrarlı tabakalı 5 katlı çapraz doğrulama, 3 tekrar (5×3). Cross-panel
+          augmentation her katta yeniden uygulanır; doğrulama yalnızca panelin kendi satırlarıyla yapılır.</p>
+        <p><b>Ne kilitli?</b>Öznitelik listesi, hiperparametre paketi ve karar eşiği ölçümden önce dondurulur.
+          Rapor edilen sayılar üretim modelinin kendisinden ölçülür; seed her yerde 42.</p>
+        <p class="flag"><b>Açıkça söylediğimiz iki sınır</b>Hiperparametreler kat başına yeniden aranmaz —
+          bu küçük bir iyimserlik payı bırakır. CFTR en yüksek skoru verir ama <em>n</em> = 111 ile en oynak paneldir.</p>
+      </div>
+    </article>
+  </section>
+
+  <!-- ================ 08 HATA ANALİZİ · 09 KLİNİK ================ -->
+  <section class="row">
+
+    <article class="card c5">
+      <div class="sechead">
+        <span class="sechead__no">08</span>
+        <span class="sechead__label">Hata analizi</span>
+        <span class="sechead__rule"></span>
+      </div>
+      <h3 class="sectitle" style="font-size:25pt">Hatalar bilinçli olarak tek yöne düşüyor.</h3>
+
+      <table class="dark">
+        <thead>
+          <tr><th>Panel</th><th>TN</th><th>FP</th><th>FN</th><th>TP</th><th>Hata</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>GENEL</td><td>559</td><td>223</td><td class="fn">301</td><td class="tp">1.848</td><td>%17,9</td></tr>
+          <tr><td>KANSER</td><td>102</td><td>18</td><td class="fn">17</td><td class="tp">251</td><td>%9,0</td></tr>
+          <tr><td>PAH</td><td>28</td><td>34</td><td class="fn">4</td><td class="tp">306</td><td>%10,2</td></tr>
+          <tr><td>CFTR</td><td>18</td><td>3</td><td class="fn">5</td><td class="tp">85</td><td>%7,2</td></tr>
+        </tbody>
+      </table>
+
+      <ul class="facts">
+        <li>Karar eşiği <b>duyarlılığa eğimli</b> (0,86–0,99): yanlış negatif
+            <span class="warn">kaçan tanı</span>, yanlış pozitif ise geri döndürülebilir bir ek test
+            demektir. GENEL'deki 223 FP / 301 FN bu tercihin faturasıdır.</li>
+        <li><b>Öznitelik önemi:</b> GENEL ve KANSER'de en tepedeki sinyal <em>eksiklik imzası</em>
+            (<span class="mono">missingtier_x_ekcount</span>); PAH ve CFTR'de allel/in-siliko ve
+            evrimsel korunmuşluk öne çıkıyor.</li>
+        <li><span class="warn">Bunu başarı değil, risk olarak işaretliyoruz:</span> gerçek bir biyolojik
+            sinyal de olabilir, veri toplama artefaktı da. Eksiklik grubu çıkarılmış F1 ayrıca ölçülecek.</li>
+      </ul>
+    </article>
+
+    <article class="card c7">
+      <div class="sechead">
+        <span class="sechead__no">09</span>
+        <span class="sechead__label">Klinik entegrasyon</span>
+        <span class="sechead__rule"></span>
+      </div>
+      <h3 class="sectitle" style="font-size:25pt">Anotasyondan sonra, uzmandan önce — otonom tanı değil, triyaj.</h3>
+
+      <div class="flow">
+        <div class="flow__step"><h4>SEKANSLAMA</h4><p>laboratuvar</p></div>
+        <span class="flow__arrow">›</span>
+        <div class="flow__step"><h4>ANOTASYON</h4><p>lab'ın kendi çıktısı</p></div>
+        <span class="flow__arrow">›</span>
+        <div class="flow__step flow__step--ours"><h4>PatHUgen</h4><p>triyaj · panel paketi</p></div>
+        <span class="flow__arrow">›</span>
+        <div class="flow__step"><h4>UZMAN</h4><p>ACMG kanıt tartımı</p></div>
+        <span class="flow__arrow">›</span>
+        <div class="flow__step"><h4>RAPOR</h4><p>hekim / danışman</p></div>
+      </div>
+
+      <div class="bands">
+        <div class="bands__bar">
+          <div class="bands__seg bands__seg--no">otomatik benign</div>
+          <div class="bands__seg bands__seg--mid">uzman inceler — kararsızlık da bir çıktıdır</div>
+          <div class="bands__seg bands__seg--yes">otomatik patojenik</div>
+        </div>
+        <div class="bands__axis">
+          <span>p = 0</span><span>t<sub>alt</sub></span><span>t<sub>üst</sub></span><span>p = 1</span>
+        </div>
+      </div>
+
+      <ul class="facts">
+        <li><b>Veri sözleşmesi.</b> Giriş: laboratuvarın kendi anotasyon çıktısı — ek veritabanı, lisans
+            ya da internet istemez. Çıkış: varyant tablosuna eklenen dört kolon (kalibre olasılık, bant,
+            tarif sürümü, en katkılı 3 öznitelik grubu). Her satır hangi tarif ve eşikten geldiğini taşır;
+            <b>denetim izi burada kurulur</b>.</li>
+        <li><b>Konuşlanma.</b> <span class="mono">6–58 µs/varyant</span>, <span class="mono">~1 MB</span> paket,
+            tek CPU süreci, GPU yok, <b>sıfır dış çağrı</b> — genomik veri kurumdan çıkmaz.
+            Farkımız kapsam değil, konuşlanma.</li>
+        <li><b>Emniyet sınırı.</b> ACMG kanıt kodu atamaz, VUS için sınıf iddia etmez, tanımadığı profili
+            otomatik karara bağlamaz. Bant genişlikleri henüz elimizde yok — pilotun ilk çıktısı bu tablo.</li>
+      </ul>
+    </article>
+  </section>
+
+  <!-- ======================= AÇIKLIK ŞERİDİ ======================= -->
+  <section class="row">
+    <article class="honesty">
+      <div class="honesty__head">
+        <h3>Açıklık ve sınırlılıklar — sormadan söylüyoruz</h3>
+        <p>TEKNOFEST verisi dışında hiçbir kaynak kullanılmadı; bu bir tercih değil, doğrulanabilir bir kısıt.</p>
+      </div>
+      <div class="honesty__grid">
+        <div>
+          <h4>Dış veri yok</h4>
+          <p>ClinVar, gnomAD, dbNSFP sorgulanmadı; AlphaMissense, ESM1b, REVEL gibi hazır model çıktısı
+            eklenmedi. <b>Kromozom ve pozisyon gizli, kolon adları anonim</b> — eşleştirme teknik olarak da
+            imkânsız. Tek dış bilgi sabit tablolar: BLOSUM, Grantham, fizikokimyasal ölçekler.</p>
+        </div>
+        <div>
+          <h4>Ölçek ve doğrulama</h4>
+          <p><b>3.802 varyant bir kavram kanıtıdır, klinik kanıt değil.</b> Her laboratuvar kendi kohortunda
+            doğrulamalıdır; ileriye dönük doğrulama ve kazanılan uzman saati ölçümü henüz yapılmadı.</p>
+        </div>
+        <div>
+          <h4>Panel kimliği</h4>
+          <p>CFTR satırlarının <b>~%96'sı GENEL'den ödünç</b> — bu saf bir CFTR modeli değil,
+            GENEL → CFTR transferidir. PAH için de artırım oranı 1,00'dir.</p>
+        </div>
+        <div>
+          <h4>VUS ve regülasyon</h4>
+          <p>Eğitim verimizde <b>VUS yok</b>; laboratuvarın en çok vakit kaybettiği yeri çözmüş gibi
+            göstermiyoruz. Tanı yazılımı tıbbi cihaz kapsamındadır (TİTCK, IVDR/CE-IVD):
+            kalite sistemi ve denetim izi şarttır.</p>
+        </div>
+      </div>
+    </article>
+  </section>
+
+</main>
+
+<!-- ======================= ALT BANT ======================= -->
+<footer>
+  <blockquote class="quote">
+    “Bilimsiz pratik sağır, pratiksiz bilim kördür.”
+    <cite>İbn-i Sina</cite>
+  </blockquote>
+
+  <p class="closing">
+    <b>Özgün katkımız yeni bir mimari değil, daha dürüst bir karar katmanıdır:</b>
+    sızıntısız cross-panel augmentation, adsız kolondan anlam çıkarımı, ReliefF kapılı hibrit seçici
+    ve denetimden geçmiş sabit karar paketi — dördü de küçük kohortlu klinik tablo problemlerine taşınabilir.
+  </p>
+
+  <div class="logoplate">
+    <img class="l-t3"  src="assets/t3.png"    alt="Türkiye Teknoloji Takımı">
+    <img class="l-mth" src="assets/mth.png"   alt="#MilliTeknolojiHamlesi">
+    <img class="l-tsb" src="assets/tuseb.png" alt="TÜSEB">
+  </div>
+</footer>
+
+</body>
+</html>
