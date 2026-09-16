@@ -1,0 +1,650 @@
+/* ============================================================
+   PatHUgen — TEKNOFEST 2026 bilimsel afiş
+   Format: A0 dikey (841 × 1189 mm) · CMYK-güvenli derin lacivert
+   Yön: klinik-editoryal — lacivert saha + tek beyaz "sonuç levhası"
+   ============================================================ */
+
+/* ------------------------------------------------------------
+   Linux Libertine O — sistemdeki .otf (CFF) sürümü Chrome tarafından
+   PDF'e Type 3 font olarak gömülüyor; bazı baskı RIP'leri Type 3'ü
+   düşük çözünürlükte tarar. Aynı konturların TrueType'a çevrilmiş
+   hâlini gömerek fontun normal bir CID TrueType olarak girmesini
+   sağlıyoruz. Üretimi: afis-kaynak/tools/otf2ttf.py
+   ------------------------------------------------------------ */
+@font-face {
+  font-family: "Linux Libertine O";
+  src: url("assets/fonts/LinLibertine_R.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Linux Libertine O";
+  src: url("assets/fonts/LinLibertine_RB.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Linux Libertine O";
+  src: url("assets/fonts/LinLibertine_RI.ttf") format("truetype");
+  font-weight: 400;
+  font-style: italic;
+}
+@font-face {
+  font-family: "Linux Libertine O";
+  src: url("assets/fonts/LinLibertine_RBI.ttf") format("truetype");
+  font-weight: 700;
+  font-style: italic;
+}
+
+:root {
+  /* — saha ve yüzeyler (koyu) — */
+  --field-top:      #0C2648;
+  --field-mid:      #071A33;
+  --field-bot:      #040C18;
+  --panel:          rgba(13, 40, 74, 0.78);
+  --panel-raise:    rgba(22, 60, 107, 0.55);
+  --panel-solid:    #0C2646;
+  --hair:           rgba(126, 182, 236, 0.22);
+  --hair-strong:    rgba(126, 182, 236, 0.44);
+
+  /* — mürekkep (koyu zemin) — */
+  --ink:            #EFF6FD;
+  --ink-2:          #BAD2E9;
+  --ink-3:          #8BAACA;
+
+  /* — vurgular: anlamsal, dekoratif değil — */
+  --accent:         #58C5F2;   /* PatHUgen · veri */
+  --accent-deep:    #2A9BD1;
+  --gold:           #F2B434;   /* darboğaz · uyarı · sınırlılık */
+  --mint:           #46D4A0;   /* kazanç */
+  --rose:           #FF8A8A;   /* yanlış negatif · risk */
+
+  /* — beyaz levha (sonuçlar) — */
+  --slab:           #F3F7FC;
+  --slab-2:         #E6EEF8;
+  --slab-ink:       #0A1C33;
+  --slab-ink-2:     #47617E;
+  --slab-hair:      #CBDBEC;
+  --series-1:       #2a78d6;   /* PatHUgen  — doğrulanmış kategorik yuva 1 */
+  --series-2:       #eb6834;   /* Naif taban — doğrulanmış kategorik yuva 2 */
+
+  /* — tipografi — */
+  --font-display: "Lato", "Aptos", sans-serif;
+  --font-serif:   "Linux Libertine O", "Aptos Serif", serif;
+  --font-mono:    "Aptos Mono", "DejaVu Sans Mono", monospace;
+
+  --t-title:    128pt;
+  --t-sub:       26pt;
+  --t-eyebrow:   16pt;
+  --t-hero:      62pt;
+  --t-sec:       28pt;
+  --t-lead:      20pt;
+  --t-body:      20pt;
+  --t-small:     17pt;
+  --t-micro:     14pt;
+
+  /* — ritim — */
+  --pad-x:      26mm;
+  --gut:         8mm;
+  --row-gap:     5mm;
+  --r:           4mm;
+}
+
+* { box-sizing: border-box; }
+
+@page { size: 841mm 1189mm; margin: 0; }
+
+html, body { margin: 0; padding: 0; }
+
+body {
+  width: 841mm;
+  height: 1189mm;
+  overflow: hidden;
+  background:
+    radial-gradient(120% 60% at 18% 0%,  rgba(56,150,220,0.28) 0%, rgba(56,150,220,0) 58%),
+    radial-gradient(90%  55% at 92% 34%, rgba(40,190,235,0.13) 0%, rgba(40,190,235,0) 60%),
+    linear-gradient(176deg, var(--field-top) 0%, var(--field-mid) 46%, var(--field-bot) 100%);
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: var(--t-body);
+  line-height: 1.34;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+/* ince grenli doku — düz alanlara atmosfer verir */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: url("assets/grain.png");
+  background-size: 34mm 34mm;
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+/* ============================================================
+   1 — MASTHEAD
+   ============================================================ */
+
+.masthead {
+  position: relative;
+  height: 126mm;
+  padding: 10mm var(--pad-x) 0;
+  overflow: hidden;
+  border-bottom: 0.7mm solid var(--accent-deep);
+}
+
+.masthead__bg {
+  position: absolute;
+  inset: 0;
+  background: url("assets/nebula-300ppi.jpg") center 42% / cover no-repeat;
+  opacity: 1;
+}
+
+.masthead__veil {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(94deg, rgba(4,14,28,0.90) 22%, rgba(4,14,28,0.24) 60%, rgba(4,14,28,0.52) 100%),
+    linear-gradient(0deg,  rgba(4,12,24,0.92) 0%,  rgba(4,12,24,0.00) 52%);
+}
+
+.masthead__inner {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: start;
+  height: 100%;
+}
+
+.eyebrow {
+  font-size: var(--t-eyebrow);
+  font-weight: 700;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.wordmark {
+  margin: 2.6mm 0 0;
+  font-size: var(--t-title);
+  font-weight: 900;
+  letter-spacing: -0.035em;
+  line-height: 0.86;
+  color: #fff;
+  text-shadow: 0 1.4mm 6mm rgba(0,0,0,0.55);
+}
+.wordmark b { color: var(--accent); font-weight: 900; }
+
+.tagline {
+  margin: 3.4mm 0 0;
+  max-width: 520mm;
+  font-size: var(--t-sub);
+  font-weight: 300;
+  line-height: 1.24;
+  color: var(--ink);
+}
+.tagline strong { font-weight: 700; color: #fff; }
+
+.byline {
+  margin: 4mm 0 0;
+  font-size: 18pt;
+  color: var(--ink-2);
+}
+.byline b { color: #fff; font-weight: 700; }
+.byline .sep { color: var(--ink-3); padding: 0 2.4mm; }
+
+.masthead__logos {
+  display: flex;
+  align-items: center;
+  gap: 10mm;
+  padding-top: 2mm;
+}
+.masthead__logos img { display: block; }
+.logo-teknofest { height: 46mm; }
+.logo-tuseb     { height: 50mm; }
+
+/* künye şeridi */
+.idstrip {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 0 var(--pad-x);
+  height: 13mm;
+  background: rgba(3,10,20,0.78);
+  border-top: 0.35mm solid var(--hair);
+  font-family: var(--font-mono);
+  font-size: var(--t-micro);
+  letter-spacing: 0.10em;
+  color: var(--ink-2);
+}
+.idstrip span { padding-right: 9mm; margin-right: 9mm; border-right: 0.35mm solid var(--hair); }
+.idstrip span:last-child { border-right: 0; }
+.idstrip b { color: var(--accent); font-weight: 700; }
+
+/* ============================================================
+   2 — YERLEŞİM ISKELETİ
+   ============================================================ */
+
+main {
+  padding: var(--row-gap) var(--pad-x) 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--row-gap);
+}
+
+.row { display: grid; grid-template-columns: repeat(12, 1fr); gap: var(--gut); }
+.c3 { grid-column: span 3; } .c4 { grid-column: span 4; }
+.c5 { grid-column: span 5; } .c7 { grid-column: span 7; }
+.c12 { grid-column: span 12; }
+
+.card {
+  position: relative;
+  padding: 5mm 6mm;
+  background: var(--panel);
+  border: 0.4mm solid var(--hair);
+  border-radius: var(--r);
+  overflow: hidden;
+}
+.card--quiet { background: rgba(9,28,53,0.55); }
+
+/* bölüm başlığı: seri numarası + etiket + saç teli çizgi */
+.sechead { display: flex; align-items: baseline; gap: 4mm; margin-bottom: 2.6mm; }
+.sechead__no {
+  font-family: var(--font-serif);
+  font-size: 24pt;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: -0.02em;
+}
+.sechead__label {
+  font-size: var(--t-eyebrow);
+  font-weight: 800;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.sechead__rule { flex: 1; height: 0.4mm; background: var(--hair-strong); transform: translateY(-1.6mm); }
+
+.sectitle {
+  margin: 0 0 2mm;
+  font-size: var(--t-sec);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: #fff;
+}
+.lead {
+  margin: 0 0 3.4mm;
+  font-size: var(--t-lead);
+  font-weight: 300;
+  line-height: 1.3;
+  color: var(--ink-2);
+}
+
+ul.facts { margin: 0; padding: 0; list-style: none; }
+ul.facts li {
+  position: relative;
+  padding-left: 7mm;
+  margin-bottom: 1.8mm;
+}
+ul.facts li::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 2.9mm;
+  width: 4mm; height: 0.7mm;
+  background: var(--accent);
+}
+ul.facts li:last-child { margin-bottom: 0; }
+ul.facts b { color: #fff; font-weight: 800; }
+ul.facts .warn { color: var(--gold); font-weight: 800; }
+ul.facts .good { color: var(--mint); font-weight: 800; }
+
+.mono { font-family: var(--font-mono); }
+.small { font-size: var(--t-small); color: var(--ink-2); }
+.micro { font-size: var(--t-micro); color: var(--ink-3); line-height: 1.34; }
+
+/* ============================================================
+   3 — HERO: paneller arası ana bulgu
+   ============================================================ */
+
+.hero { display: grid; grid-template-columns: 1fr; gap: 3.4mm; }
+
+.hero__claim {
+  display: flex;
+  align-items: center;
+  gap: 6mm;
+  padding: 3.4mm 6mm;
+  background: linear-gradient(92deg, rgba(88,197,242,0.20), rgba(88,197,242,0.02));
+  border-left: 1.4mm solid var(--accent);
+  border-radius: 1.4mm;
+  font-size: 21pt;
+  font-weight: 300;
+  line-height: 1.26;
+  color: var(--ink);
+}
+.hero__claim b { font-weight: 800; color: #fff; }
+.hero__claim .hl { color: var(--accent); font-weight: 800; }
+
+.statgrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--gut); }
+
+.stat {
+  position: relative;
+  padding: 4mm 5mm 3.6mm;
+  background: var(--panel-raise);
+  border: 0.4mm solid var(--hair);
+  border-top: 1.1mm solid var(--accent);
+  border-radius: var(--r);
+}
+.stat__panel {
+  font-size: var(--t-small);
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  color: var(--accent);
+}
+.stat__val {
+  display: block;
+  margin: 0.4mm 0 0;
+  font-size: var(--t-hero);
+  font-weight: 900;
+  letter-spacing: -0.045em;
+  line-height: 0.94;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+.stat__unit { font-size: var(--t-small); font-weight: 700; color: var(--ink-3); letter-spacing: 0.12em; }
+.stat__meta {
+  margin-top: 1.8mm;
+  padding-top: 1.8mm;
+  border-top: 0.35mm solid var(--hair);
+  font-family: var(--font-mono);
+  font-size: var(--t-micro);
+  color: var(--ink-2);
+  line-height: 1.5;
+}
+
+/* ============================================================
+   4 — AKIŞ ŞEMALARI (darboğaz · klinik · boru hattı)
+   ============================================================ */
+
+.flow { display: flex; align-items: stretch; gap: 0; margin: 0.6mm 0 3.4mm; }
+.flow__step {
+  flex: 1;
+  padding: 2.4mm 2mm;
+  text-align: center;
+  background: rgba(8,26,48,0.72);
+  border: 0.4mm solid var(--hair);
+  border-radius: 1.6mm;
+}
+.flow__step h4 {
+  margin: 0;
+  font-size: var(--t-small);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--ink);
+}
+.flow__step p { margin: 0.8mm 0 0; font-size: var(--t-micro); color: var(--ink-3); line-height: 1.26; }
+.flow__arrow {
+  align-self: center;
+  padding: 0 2mm;
+  font-size: 20pt;
+  color: var(--hair-strong);
+}
+.flow__step--alert {
+  background: rgba(242,180,52,0.14);
+  border-color: var(--gold);
+}
+.flow__step--alert h4 { color: var(--gold); }
+.flow__step--alert p { color: rgba(242,180,52,0.82); }
+.flow__step--ours {
+  background: rgba(88,197,242,0.16);
+  border-color: var(--accent);
+}
+.flow__step--ours h4 { color: var(--accent); }
+.flow__step--ours p { color: rgba(88,197,242,0.86); }
+
+/* 7 adımlı boru hattı */
+.pipe { display: flex; align-items: stretch; gap: 0; }
+.pipe__step {
+  flex: 1;
+  position: relative;
+  padding: 3.2mm 2.8mm 3mm;
+  background: rgba(10,32,58,0.78);
+  border: 0.4mm solid var(--hair);
+  border-radius: 2mm;
+}
+.pipe__step--aug { border-color: rgba(242,180,52,0.62); background: rgba(242,180,52,0.17); }
+.pipe__step--aug .pipe__n, .pipe__step--aug h4 { color: var(--gold); }
+.pipe__step--out { border-color: var(--accent); background: rgba(88,197,242,0.15); }
+.pipe__step--out h4 { color: var(--accent); }
+.pipe__n {
+  display: block;
+  font-family: var(--font-serif);
+  font-size: 21pt;
+  font-weight: 700;
+  color: var(--accent);
+  line-height: 1;
+}
+.pipe__step h4 {
+  margin: 1.4mm 0 1mm;
+  font-size: 21pt;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: #fff;
+}
+.pipe__step p { margin: 0; font-size: var(--t-micro); color: var(--ink-2); line-height: 1.3; }
+.pipe__step p .mono { color: var(--ink); }
+.pipe__link {
+  align-self: center;
+  width: 5mm;
+  height: 0.5mm;
+  background: var(--hair-strong);
+  flex: none;
+}
+
+.lanes { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gut); margin-top: 3.2mm; }
+.lane {
+  padding: 2.8mm 4mm;
+  border-radius: 1.6mm;
+  border: 0.4mm solid var(--hair);
+  background: rgba(8,24,45,0.6);
+  font-size: var(--t-small);
+  color: var(--ink-2);
+  line-height: 1.32;
+}
+.lane b { display: block; font-size: var(--t-body); font-weight: 800; color: #fff; margin-bottom: 1mm; }
+.lane--search b { color: var(--gold); }
+.lane--deliver b { color: var(--accent); }
+
+/* ============================================================
+   5 — SONUÇ LEVHASI (tek açık yüzey — kompozisyonun çapası)
+   ============================================================ */
+
+.slab {
+  grid-column: span 12;
+  padding: 6mm 7mm 5.5mm;
+  background: linear-gradient(180deg, var(--slab) 0%, var(--slab-2) 100%);
+  border-radius: var(--r);
+  box-shadow: 0 3mm 16mm rgba(0,0,0,0.45);
+  color: var(--slab-ink);
+}
+.slab .sechead__no { color: var(--series-1); }
+.slab .sechead__label { color: var(--slab-ink-2); }
+.slab .sechead__rule { background: var(--slab-hair); }
+.slab .sectitle { color: var(--slab-ink); }
+.slab .lead { color: var(--slab-ink-2); }
+
+.slab__grid { display: grid; grid-template-columns: 1.18fr 1fr 1fr; gap: 7mm; align-items: start; }
+
+table.res { width: 100%; border-collapse: collapse; font-size: 17pt; }
+table.res th, table.res td { padding: 1.5mm 1.4mm; text-align: right; }
+table.res th:first-child, table.res td:first-child { text-align: left; }
+table.res thead th {
+  font-size: var(--t-small);
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--slab-ink-2);
+  border-bottom: 0.6mm solid var(--slab-ink);
+}
+table.res tbody td { border-bottom: 0.3mm solid var(--slab-hair); font-variant-numeric: tabular-nums; font-family: var(--font-mono); }
+table.res tbody td:first-child { font-family: var(--font-display); font-weight: 600; color: var(--slab-ink-2); }
+table.res tbody tr.key td { background: rgba(42,120,214,0.10); font-weight: 800; color: var(--slab-ink); }
+table.res tbody tr.key td:first-child { color: var(--series-1); font-weight: 800; }
+table.res tbody tr:last-child td { border-bottom: 0; }
+
+.figs { display: contents; }
+.fig__cap {
+  margin: 0 0 1.6mm;
+  font-size: var(--t-small);
+  font-weight: 800;
+  color: var(--slab-ink);
+}
+.fig__cap span { font-weight: 400; color: var(--slab-ink-2); }
+.fig svg { display: block; width: 100%; height: auto; }
+
+.slab__note {
+  margin-top: 4mm;
+  padding-top: 3mm;
+  border-top: 0.4mm solid var(--slab-hair);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8mm;
+  font-size: var(--t-micro);
+  line-height: 1.38;
+  color: var(--slab-ink-2);
+}
+.slab__note b { display: block; color: var(--slab-ink); font-size: var(--t-small); margin-bottom: 0.8mm; }
+.slab__note .flag b { color: #A8630B; }
+
+/* ============================================================
+   6 — KOYU ZEMİN TABLOLARI VE MİNİ BİLEŞENLER
+   ============================================================ */
+
+table.dark { width: 100%; border-collapse: collapse; font-size: var(--t-small); margin: 0.6mm 0 2.6mm; }
+table.dark th, table.dark td { padding: 1.3mm 1.2mm; text-align: right; }
+table.dark th:first-child, table.dark td:first-child { text-align: left; }
+table.dark thead th {
+  font-size: var(--t-micro);
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  border-bottom: 0.45mm solid var(--hair-strong);
+}
+table.dark tbody td { border-bottom: 0.3mm solid var(--hair); font-family: var(--font-mono); font-variant-numeric: tabular-nums; color: var(--ink); }
+table.dark tbody td:first-child { font-family: var(--font-display); font-weight: 700; color: var(--ink-2); }
+table.dark tbody tr:last-child td { border-bottom: 0; }
+table.dark .fn { color: var(--rose); font-weight: 700; }
+table.dark .tp { color: var(--mint); font-weight: 700; }
+table.dark .zero { color: var(--ink-3); }
+
+/* önce–sonra rozeti (CFTR AUC sıçraması) */
+.delta {
+  display: flex;
+  align-items: center;
+  gap: 4mm;
+  margin: 0.6mm 0 2.6mm;
+  padding: 4mm 5mm;
+  background: rgba(70,212,160,0.12);
+  border: 0.4mm solid rgba(70,212,160,0.45);
+  border-radius: 2mm;
+}
+.delta__side { text-align: center; }
+.delta__side em { display: block; font-style: normal; font-size: var(--t-micro); letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3); }
+.delta__side strong { font-family: var(--font-mono); font-size: 26pt; font-weight: 800; line-height: 1.05; }
+.delta__off strong { color: var(--rose); }
+.delta__on  strong { color: var(--mint); }
+.delta__arrow { font-size: 26pt; color: var(--ink-3); }
+.delta__cap { flex: 1; font-size: var(--t-micro); color: var(--ink-2); line-height: 1.34; }
+
+/* üç bantlı triyaj çubuğu */
+.bands { margin: 2mm 0 3mm; }
+.bands__bar { display: flex; height: 10mm; border-radius: 1.6mm; overflow: hidden; border: 0.4mm solid var(--hair); }
+.bands__seg {
+  display: flex; align-items: center; justify-content: center;
+  font-size: var(--t-micro); font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
+}
+.bands__seg--no  { flex: 1;    background: rgba(88,197,242,0.16); color: var(--accent); }
+.bands__seg--mid { flex: 1.15; background: rgba(242,180,52,0.24); color: var(--gold); }
+.bands__seg--yes { flex: 1;    background: rgba(255,138,138,0.18); color: var(--rose); }
+.bands__axis {
+  display: flex; justify-content: space-between;
+  margin-top: 1.6mm;
+  font-family: var(--font-mono); font-size: var(--t-micro); color: var(--ink-3);
+}
+
+/* ============================================================
+   7 — AÇIKLIK / SINIRLILIK ŞERİDİ
+   ============================================================ */
+
+.honesty {
+  grid-column: span 12;
+  padding: 4.5mm 7mm;
+  background: rgba(242,180,52,0.07);
+  border: 0.4mm solid rgba(242,180,52,0.42);
+  border-radius: var(--r);
+}
+.honesty__head { display: flex; align-items: baseline; gap: 4mm; margin-bottom: 2.6mm; }
+.honesty__head h3 { margin: 0; font-size: 24pt; font-weight: 800; color: var(--gold); letter-spacing: -0.01em; }
+.honesty__head p { margin: 0; font-size: var(--t-small); color: var(--ink-2); }
+.honesty__grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6mm; }
+.honesty__grid h4 {
+  margin: 0 0 1.6mm;
+  font-size: var(--t-small);
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+.honesty__grid p { margin: 0; font-size: 15.5pt; line-height: 1.4; color: var(--ink-2); }
+.honesty__grid p b { color: #fff; font-weight: 800; }
+
+/* ============================================================
+   8 — ALT BANT
+   ============================================================ */
+
+footer {
+  margin-top: var(--row-gap);
+  padding: 4mm var(--pad-x) 6mm;
+  border-top: 0.5mm solid var(--hair-strong);
+  display: grid;
+  grid-template-columns: 1.5fr 1fr auto;
+  align-items: center;
+  gap: 8mm;
+}
+.quote {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 25pt;
+  font-style: italic;
+  line-height: 1.24;
+  color: var(--ink);
+}
+.quote footer, .quote cite {
+  display: block;
+  margin-top: 1.6mm;
+  font-family: var(--font-display);
+  font-style: normal;
+  font-size: var(--t-micro);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.closing { font-size: 17.5pt; color: var(--ink-2); line-height: 1.33; }
+.closing b { color: #fff; font-weight: 800; }
+.logoplate {
+  display: flex;
+  align-items: center;
+  gap: 9mm;
+  padding: 5mm 7mm;
+  background: #F3F7FC;
+  border-radius: 2.4mm;
+}
+.logoplate img { display: block; }
+.logoplate .l-t3   { height: 19mm; }
+.logoplate .l-mth  { height: 21mm; }
+.logoplate .l-tsb  { height: 25mm; }
