@@ -18,8 +18,11 @@ from pathugen.versioning import resolve_model_version_dir
 def load_bundle(panel: str, model_dir: Path = MODEL_DIR, version: int | None = None):
     """Load the requested (or, by default, most recently trained) snapshot
     for `panel`. Returns (models, cat_maps, features, config, calibrator,
-    panel_dir); `calibrator` is None for snapshots trained before calibration
-    was added, which stay fully loadable."""
+    bin_al_cols, panel_dir); `calibrator` is None for snapshots trained
+    before calibration was added, and `bin_al_cols` is None for snapshots
+    trained before this fix — both cases stay fully loadable, falling back
+    to their previous (approximate, for the calibrator) or per-batch (for
+    bin_al_cols) behaviour."""
     panel_dir, resolved_version = resolve_model_version_dir(panel, model_dir, version)
     models = [joblib.load(panel_dir / f"seed{i}.joblib") for i in range(SEED_ENSEMBLE)]
     cat_maps = joblib.load(panel_dir / "cat_maps.joblib")
@@ -27,7 +30,9 @@ def load_bundle(panel: str, model_dir: Path = MODEL_DIR, version: int | None = N
     config = json.loads((panel_dir / "config.json").read_text())
     calibrator_path = panel_dir / "calibrator.joblib"
     calibrator = joblib.load(calibrator_path) if calibrator_path.exists() else None
-    return models, cat_maps, features, config, calibrator, panel_dir
+    bin_cols_path = panel_dir / "bin_al_columns.json"
+    bin_al_cols = json.loads(bin_cols_path.read_text()) if bin_cols_path.exists() else None
+    return models, cat_maps, features, config, calibrator, bin_al_cols, panel_dir
 
 
 def prior_shift_threshold(t_ref: float, prior_train: float, prior_target: float) -> float:
@@ -65,10 +70,10 @@ def predict_panel(panel: str, csv_path: Path, model_dir: Path = MODEL_DIR,
                    prior_shift: float | None = None,
                    model_version: int | None = None) -> tuple[list[dict], Path]:
     """Return (prediction records, model snapshot dir actually used)."""
-    models, cat_maps, features, config, calibrator, panel_dir = load_bundle(
+    models, cat_maps, features, config, calibrator, bin_al_cols, panel_dir = load_bundle(
         panel, model_dir, version=model_version)
     df = load_test_csv(csv_path)
-    X, _, _ = build_features(df, cat_maps=cat_maps)
+    X, _, _ = build_features(df, cat_maps=cat_maps, bin_cols=bin_al_cols)
 
     missing = [f for f in features if f not in X.columns]
     if missing:

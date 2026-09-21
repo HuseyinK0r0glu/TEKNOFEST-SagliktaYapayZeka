@@ -37,6 +37,14 @@ POS = 1
 PANELS = ["GENEL", "KANSER", "PAH", "CFTR"]
 AUG_SOURCE = "GENEL"
 
+# The organizers' official result-JSON schema expects this panel labeled
+# "MASTER" (matching the training file YARISMA_TRAIN_MASTER.csv), even
+# though every internal identifier for it — model directory, config key,
+# PANELS entry — stays "GENEL" throughout this codebase. This is the ONLY
+# place that mapping is defined; `pathugen/result_json.py` applies it once,
+# at the JSON boundary, so nothing else needs to know about it.
+EXTERNAL_PANEL_NAMES = {"GENEL": "MASTER", "KANSER": "KANSER", "PAH": "PAH", "CFTR": "CFTR"}
+
 DATA_DIR = Path(os.environ.get(
     "TEKNOFEST_DATA_DIR", "universite-veri-seti/EĞİTİM (TRAIN) SETLERİ"))
 TRAIN_FILES = {

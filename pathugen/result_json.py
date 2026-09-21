@@ -4,14 +4,17 @@ from __future__ import annotations
 import json
 
 from pathugen.config import (
-    APPLICATION_ID, COMPETITION_LEVEL, PANELS, PROB_TOLERANCE, TEAM_ID, TEAM_NAME,
+    APPLICATION_ID, COMPETITION_LEVEL, EXTERNAL_PANEL_NAMES, PANELS, PROB_TOLERANCE,
+    TEAM_ID, TEAM_NAME,
 )
 
 
 def build_result_json(predictions_by_panel: dict[str, list[dict]]) -> dict:
     predictions = []
     for panel in PANELS:
-        predictions.extend(predictions_by_panel.get(panel, []))
+        external = EXTERNAL_PANEL_NAMES[panel]
+        for rec in predictions_by_panel.get(panel, []):
+            predictions.append({**rec, "panel": external})
     return {
         "team_name": TEAM_NAME, "team_id": TEAM_ID, "application_id": APPLICATION_ID,
         "competition_level": COMPETITION_LEVEL, "predictions": predictions,
@@ -34,11 +37,12 @@ def validate_result_json(result: dict, expected_counts: dict[str, int]) -> list[
         problems.append("predictions must be a non-empty array")
         return problems
 
+    valid_panels = set(EXTERNAL_PANEL_NAMES.values())
     seen = {}
     for i, rec in enumerate(preds):
         where = f"predictions[{i}] (id={rec.get('id')!r}, panel={rec.get('panel')!r})"
         panel = rec.get("panel")
-        if panel not in PANELS:
+        if panel not in valid_panels:
             problems.append(f"{where}: invalid panel")
         rid = rec.get("id")
         if not rid:
@@ -58,7 +62,8 @@ def validate_result_json(result: dict, expected_counts: dict[str, int]) -> list[
                             f"[0, 1], got {prob!r}")
 
     for panel, expected_n in expected_counts.items():
-        got = sum(1 for p, _ in seen if p == panel)
+        external = EXTERNAL_PANEL_NAMES.get(panel, panel)
+        got = sum(1 for p, _ in seen if p == external)
         if got != expected_n:
             problems.append(f"panel {panel}: expected exactly {expected_n} predictions "
                             f"(one per input row), got {got}")
