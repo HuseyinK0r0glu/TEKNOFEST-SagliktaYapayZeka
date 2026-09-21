@@ -14,7 +14,22 @@ from pathugen.config import AA_COLS, AL_COLS, CAT_COLS, EK_COLS, FEATURE_COLS, L
 STD_AA = set("ACDEFGHIKLMNPQRSTVWY")
 
 
-def _binary_al_columns(df):
+def binary_al_columns(df):
+    """AL_ columns that hold only 0/1 votes in `df`, as opposed to a
+    continuous score.
+
+    This is a property of the TRAINING data, not of whatever batch happens
+    to be passed in: `build_features` used to call this fresh on every
+    invocation, including at predict time, so a test batch where one of
+    these columns happened to be entirely missing (or, in principle,
+    genuinely non-binary in that batch) silently produced a different set
+    of engineered columns than training did — a train/predict skew that
+    surfaces as a confusing "missing engineered columns" error, or worse,
+    silently wrong values. Callers that need it to stay fixed across calls
+    (train vs. predict) must compute it once from the training data and
+    pass it into `build_features` as `bin_cols`, the same way `cat_maps`
+    already works.
+    """
     out = []
     for col in AL_COLS:
         vals = df[col].dropna().to_numpy()
@@ -40,8 +55,14 @@ def get_cat_maps(df):
     return maps
 
 
-def build_features(df, cat_maps=None):
-    """Stateless, label-independent per-row transform → (X, y, cat_cols)."""
+def build_features(df, cat_maps=None, bin_cols=None):
+    """Stateless, label-independent per-row transform → (X, y, cat_cols).
+
+    `bin_cols` should be the fixed list from `binary_al_columns()` run on
+    the TRAINING data (persisted in the model bundle); when omitted it is
+    (re)computed from `df` itself, which is only correct when `df` IS the
+    training data — see `binary_al_columns()`.
+    """
     y = df[LABEL_COL].astype(int) if LABEL_COL in df.columns else None
     a1 = df["AA_1"].astype("string")
     a2 = df["AA_2"].astype("string")
@@ -79,7 +100,7 @@ def build_features(df, cat_maps=None):
     feats["aa2_nonstd"] = ((~a2.isin(STD_AA | {"*"})) & a2.notna()).astype(int)
     feats["group_change"] = np.array([group_change(x, z) for x, z in zip(a1, a2)], dtype=int)
 
-    bin_cols = _binary_al_columns(df)
+    bin_cols = binary_al_columns(df) if bin_cols is None else [c for c in bin_cols if c in df.columns]
     if bin_cols:
         bdf = df[bin_cols]
         n_avail = bdf.notna().sum(axis=1)

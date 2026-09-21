@@ -18,7 +18,7 @@ from pathugen.augment import build_aug_pool
 from pathugen.champion_config import load_champion_config
 from pathugen.config import DATA_DIR, MODEL_DIR, PANELS, SEED, SEED_ENSEMBLE
 from pathugen.data_io import load_panel
-from pathugen.features import build_features, get_cat_maps
+from pathugen.features import binary_al_columns, build_features, get_cat_maps
 from pathugen.model import fit_seed_ensemble, make_xgb
 from pathugen.versioning import _panel_versions, next_model_version
 
@@ -75,7 +75,8 @@ def train(panels=None, model_dir: Path = MODEL_DIR) -> None:
         t0 = datetime.now()
         df = load_panel(panel)
         cat_maps = get_cat_maps(df)
-        X, y, _ = build_features(df, cat_maps=cat_maps)
+        bin_al_cols = binary_al_columns(df)
+        X, y, _ = build_features(df, cat_maps=cat_maps, bin_cols=bin_al_cols)
         y = pd.Series(np.asarray(y))
         train_prior = float(y.mean())
 
@@ -86,7 +87,8 @@ def train(panels=None, model_dir: Path = MODEL_DIR) -> None:
                 f"produced by build_features(): {missing}")
         Xs = X[cfg["features"]]
 
-        aug_X, aug_y = build_aug_pool(panel, cfg["aug_frac"], columns=Xs.columns)
+        aug_X, aug_y = build_aug_pool(panel, cfg["aug_frac"], columns=Xs.columns,
+                                      bin_cols=bin_al_cols)
         if aug_X is not None:
             Xs_full = pd.concat([Xs, aug_X], axis=0, ignore_index=True)
             y_full = pd.concat([y, aug_y], axis=0, ignore_index=True)
@@ -117,6 +119,8 @@ def train(panels=None, model_dir: Path = MODEL_DIR) -> None:
             joblib.dump(calibrator, panel_dir / "calibrator.joblib")
         (panel_dir / "selected_features.json").write_text(
             json.dumps(cfg["features"], indent=2))
+        (panel_dir / "bin_al_columns.json").write_text(
+            json.dumps(bin_al_cols, indent=2))
         (panel_dir / "config.json").write_text(json.dumps({
             "panel": panel, "version": version, "n_train_rows": int(len(X)),
             "n_augmented_rows": int(len(aug_X)) if aug_X is not None else 0,
